@@ -14,9 +14,6 @@ public class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemot
 
 	@Override
 	public LocalDateTime getRemoteDate() throws RemoteException {
-		try {
-			Thread.sleep(10000);
-		} catch (Exception ex) {}
 		return LocalDateTime.now();
 	}
 
