@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.NotBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -31,20 +34,23 @@ public class Master implements Callable<Integer> {
 			s.close(); 
 		} catch (IOException ioe) {
 			throw new RuntimeException("Connection to www.google.com failed, aborting execution.");
-		}		
-		IntStream.rangeClosed(1, 254).parallel().forEach(i -> {
-			byte[] dest = localAddr;
-			dest[3] = (byte)i;
-			try {
-				InetAddress addr = InetAddress.getByAddress(dest);
-				if (addr.isReachable(100)) {
-					synchronized (workers) {
-						workers.add(addr);
-						System.out.println("!");
-					}
-				}
-			} catch (IOException ex) {}
-		});
+		}
+//		InetAddress addr = InetAddress.getByAddress(dest);
+//		System.out.println(addr.getHostAddress());
+		try {
+			Registry reg = LocateRegistry.getRegistry("192.168.25.7", 1099);
+			WorkerRemote rem = (WorkerRemote) reg.lookup(WorkerRemote.LOOKUPNAME);
+			System.out.println(rem.getRemoteDate());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+//		IntStream.rangeClosed(1, 254).parallel().forEach(i -> {
+//			byte[] dest = localAddr;
+//			dest[3] = (byte)i;
+//			try {
+//				
+//			} catch (IOException | NotBoundException ex) {}
+//		});
 	}
 	
 	@Override
