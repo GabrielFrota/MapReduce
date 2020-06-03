@@ -16,7 +16,7 @@ public class Worker implements Callable<Integer> {
 		
 		WorkerRemoteImpl impl = new WorkerRemoteImpl();
 		Registry reg = LocateRegistry.createRegistry(1099);
-		reg.bind(WorkerRemote.LOOKUPNAME, impl);	
+		reg.bind(WorkerRemote.LOOKUP_NAME, impl);	
 		System.out.println("RMI Registry binded to port 1099 exporting WorkerRemote interface.\n"
 				+ "Type \"quit\" to stop the server and close the JVM.");
 		
