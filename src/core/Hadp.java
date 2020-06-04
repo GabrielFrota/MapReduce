@@ -16,24 +16,28 @@ public class Hadp implements Callable<Integer> {
 	private String mode;
 	
 	@Option(names = {"-i", "--input"}, description = "Input file path. Required in master only", 
-			paramLabel="input_file")
+			paramLabel="FILE")
 	private File input;
 	
 	@Option(names = {"-o", "--output"}, description = "Output file path. Required in master only", 
-			paramLabel="output_file")
+			paramLabel="FILE")
 	private File output;
+	
+	@Option(names = {"-w", "--workers"}, description = "Workers IP addresses. Required in master only", 
+			paramLabel="FILE")
+	private File workers;
 
 	private final static CommandLine comm = new CommandLine(new Hadp());
 	
 	private static void printErr(String msg) {
-		String s = comm.getColorScheme().errorText(msg).toString();
-		comm.getErr().println(s);
+		var str = comm.getColorScheme().errorText(msg).toString();
+		comm.getErr().println(str);
 	}
 	
 	@Override
 	public Integer call() throws Exception {
-		boolean isMaster = mode.equals("master");
-		boolean isWorker = mode.equals("worker");
+		var isMaster = mode.equals("master");
+		var isWorker = mode.equals("worker");
 		if (!isMaster && !isWorker) {
 			printErr("Invalid --mode parameter value. Valid values are \"master\" or \"worker\"");
 			return -1;
@@ -41,17 +45,22 @@ public class Hadp implements Callable<Integer> {
 		if (isMaster && (!input.exists() || !input.canRead())) {
 			printErr("Invalid --input parameter value. Correct file path to an existing "
 					+ "file with read permission is required.");
-			return -2;
+			return -1;
+		}
+		if (isMaster && (!workers.exists() || !workers.canRead())) {
+			printErr("Invalid --workers parameter value. Correct file path to an existing "
+					+ "file with read permission is required.");
+			return -1;
 		}
 		if (isMaster && output.exists()) {
 			output.delete();
 		}
 		if (isMaster && !output.createNewFile()) {
 			printErr("Output file creation failed.");
-			return -3;		
+			return -1;		
 		}
 		if (isMaster)
-			return new Master(input, output).call();
+			return new Master(input, output, workers).call();
 		else
 			return new Worker().call();
 	}

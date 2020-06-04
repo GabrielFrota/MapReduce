@@ -2,7 +2,6 @@ package core;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.time.LocalDateTime;
 
 public class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
 	
@@ -13,8 +12,8 @@ public class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemot
 	}
 
 	@Override
-	public LocalDateTime getRemoteDate() throws RemoteException {
-		return LocalDateTime.now();
+	public String getOK() throws RemoteException {
+		return "OK";
 	}
 
 }
