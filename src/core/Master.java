@@ -22,7 +22,7 @@ public class Master implements Callable<Integer> {
 			var reg = LocateRegistry.getRegistry(ip);
 			var worker = (WorkerRemote) reg.lookup(WorkerRemote.LOOKUP_NAME);
 			if (!worker.getOK().equals("OK"))
-				throw new RuntimeException("Host " + ip + " did not answered properly. Aborting execution");
+				throw new RuntimeException("Host " + ip + " did not answered properly.");
 			workers.add(ip);
 		}	
 	}
