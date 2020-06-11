@@ -18,18 +18,24 @@ public class Master implements Callable<Integer> {
     input = in;
     output = out;
     var lines = Files.readAllLines(workersIp.toPath());
-    var bases = Files.readAllLines(new File("bases/int_base_59.data").toPath());
     for (var ip : lines) {
       var reg = LocateRegistry.getRegistry(ip);
-      var worker = (WorkerRemote) reg.lookup(WorkerRemote.LOOKUP_NAME);
-      worker.sendMapChunk(bases.toString());
+      var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+      if (!worker.getOK().equals("OK"))
+        throw new RuntimeException("Host " + ip + " did not answered properly.");
       workers.add(ip);
     }
   }
 
   @Override
   public Integer call() throws Exception {
-    System.out.println("OK");
+    for (var w : workers) {
+      var reg = LocateRegistry.getRegistry(w);
+      var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+      var lines = Files.readAllLines(input.toPath());
+      int ret = worker.sendMapChunk(lines.toString());
+      System.out.println(ret);
+    }
     return 0;
   }
 

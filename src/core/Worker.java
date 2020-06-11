@@ -17,12 +17,17 @@ public class Worker implements Callable<Integer> {
       super();
     }
     
+    @Override
+    public String getOK() throws RemoteException {
+      return "OK";
+    }
+    
     private String chunk;  
     @Override public int sendMapChunk(String c) throws RemoteException {
       chunk = c;
       return chunk.length();
     }
-
+    
   }
 
   @Override
@@ -33,7 +38,7 @@ public class Worker implements Callable<Integer> {
     var impl = new WorkerRemoteImpl();
     var reg = LocateRegistry.createRegistry(1099);
     var ip = System.getProperty("java.rmi.server.hostname");
-    reg.bind(WorkerRemote.LOOKUP_NAME, impl);
+    reg.bind(WorkerRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1099 exporting WorkerRemote interface.\n"
         + "Type \"quit\" to stop the server and close the JVM.");
 
