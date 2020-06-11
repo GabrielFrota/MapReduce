@@ -32,8 +32,8 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var reg = LocateRegistry.getRegistry(w);
       var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-      var lines = Files.readAllLines(input.toPath());
-      int ret = worker.sendMapChunk(lines.toString());
+      var lines = Files.readString(input.toPath());
+      int ret = worker.sendMapChunk(lines);
       System.out.println(ret);
     }
     return 0;

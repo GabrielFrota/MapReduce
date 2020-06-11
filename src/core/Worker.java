@@ -25,6 +25,7 @@ public class Worker implements Callable<Integer> {
     private String chunk;  
     @Override public int sendMapChunk(String c) throws RemoteException {
       chunk = c;
+      System.out.println(chunk);
       return chunk.length();
     }
     
