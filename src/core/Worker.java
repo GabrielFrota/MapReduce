@@ -1,11 +1,29 @@
 package core;
 
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 public class Worker implements Callable<Integer> {
+    
+  private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
+
+    private static final long serialVersionUID = 1L;
+
+    public WorkerRemoteImpl() throws RemoteException {
+      super();
+    }
+    
+    private String chunk;  
+    @Override public int sendMapChunk(String c) throws RemoteException {
+      chunk = c;
+      return c.length();
+    }
+
+  }
 
   @Override
   public Integer call() throws Exception {

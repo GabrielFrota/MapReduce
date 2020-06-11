@@ -18,11 +18,11 @@ public class Master implements Callable<Integer> {
     input = in;
     output = out;
     var lines = Files.readAllLines(workersIp.toPath());
+    var bases = Files.readAllLines(new File("bases/int_base_59.data").toPath());
     for (var ip : lines) {
       var reg = LocateRegistry.getRegistry(ip);
       var worker = (WorkerRemote) reg.lookup(WorkerRemote.LOOKUP_NAME);
-      if (!worker.getOK().equals("OK"))
-        throw new RuntimeException("Host " + ip + " did not answered properly.");
+      worker.sendMapChunk(bases.toString());
       workers.add(ip);
     }
   }
