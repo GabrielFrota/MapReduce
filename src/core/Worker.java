@@ -1,12 +1,21 @@
 package core;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+
+@Command(name = "core/Worker", mixinStandardHelpOptions = true, 
+  description = "Worker proccess for distributed MapReduce jobs in a cluster.")
 public class Worker implements Callable<Integer> {
     
   private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
@@ -21,16 +30,36 @@ public class Worker implements Callable<Integer> {
     public String getOK() throws RemoteException {
       return "OK";
     }
-    
-    private String chunk;  
-    @Override public int sendMapChunk(String c) throws RemoteException {
-      chunk = c;
-      System.out.println(chunk);
-      return chunk.length();
+
+    @Override
+    public boolean createNewFile(File f) throws RemoteException {
+      try {
+        return f.createNewFile();
+      } catch (Exception ex) {
+        return error(ex);
+      }
     }
     
+    @Override
+    public boolean delete(File f) throws RemoteException {
+      try {
+        return f.delete();
+      } catch (Exception ex) {
+        return error(ex);
+      }
+    }
+    
+    @Override
+    public void writeChunk(File f, byte[] chunk) throws RemoteException {
+      try {
+        var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        out.write(chunk);
+      } catch (Exception ex) {
+        error(ex);
+      }
+    }   
   }
-
+  
   @Override
   public Integer call() throws Exception {
     try (var sock = new Socket("www.google.com", 80)) {
@@ -47,6 +76,13 @@ public class Worker implements Callable<Integer> {
       while (!scan.nextLine().equals("quit"));
     }
     return 0;
+  }
+  
+  private final static CommandLine comm = new CommandLine(new Worker());
+  
+  public static void main(String[] args) {
+    int exitCode = comm.execute(args);
+    System.exit(exitCode);
   }
 
 }
