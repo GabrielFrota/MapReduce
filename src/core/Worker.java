@@ -34,8 +34,9 @@ public class Worker implements Callable<Integer> {
     @Override
     public boolean createNewFile(File f) throws RemoteException, IOException {
       boolean ret = false;
+      var newFile = new File(f.getName());
       try {
-        ret = f.createNewFile();
+        ret = newFile.createNewFile();
       } catch (Exception ex) {
         ex.printStackTrace();
       }
