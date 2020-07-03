@@ -82,13 +82,17 @@ public class Master implements Callable<Integer> {
     int i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
-      worker.createNewFile(input);
+      var b = worker.createNewFile(input);
+      System.out.println(b);
       var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
+      System.out.println("!");
       byte[] buf = new byte[2048];
       for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) {
         worker.writeChunk(input, buf);
+        System.out.println("!!");
       }
     }
+    System.out.println("ok");
 //    var reg = LocateRegistry.getRegistry(w);
 //    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
 //    var lines = Files.readString(input.toPath());

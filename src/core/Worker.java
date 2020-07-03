@@ -33,7 +33,13 @@ public class Worker implements Callable<Integer> {
 
     @Override
     public boolean createNewFile(File f) throws RemoteException, IOException {
-      return f.createNewFile();
+      boolean ret = false;
+      try {
+        ret = f.createNewFile();
+      } catch (Exception ex) {
+        ex.printStackTrace();
+      }
+      return ret;
     }
     
     @Override
