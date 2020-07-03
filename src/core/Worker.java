@@ -23,7 +23,7 @@ public class Worker implements Callable<Integer> {
     private static final long serialVersionUID = 1L;
 
     public WorkerRemoteImpl() throws RemoteException {
-      super();
+      super(1099);
     }
     
     @Override
