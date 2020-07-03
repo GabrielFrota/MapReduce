@@ -1,1 +1,1 @@
-java -cp ./bin core/MapReduce -m worker
+java -cp ./bin core/Worker
