@@ -32,32 +32,21 @@ public class Worker implements Callable<Integer> {
     }
 
     @Override
-    public boolean createNewFile(File f) throws RemoteException {
-      try {
-        return f.createNewFile();
-      } catch (Exception ex) {
-        return error(ex);
-      }
+    public boolean createNewFile(File f) throws RemoteException, IOException {
+      return f.createNewFile();
     }
     
     @Override
-    public boolean delete(File f) throws RemoteException {
-      try {
-        return f.delete();
-      } catch (Exception ex) {
-        return error(ex);
-      }
+    public boolean delete(File f) throws RemoteException {   
+      return f.delete();
     }
     
     @Override
-    public void writeChunk(File f, byte[] chunk) throws RemoteException {
-      try {
-        var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        out.write(chunk);
-      } catch (Exception ex) {
-        error(ex);
-      }
-    }   
+    public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException {
+      var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+      out.write(chunk);
+    }  
+    
   }
   
   @Override

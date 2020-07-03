@@ -2,7 +2,13 @@ package core;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import picocli.CommandLine;
@@ -24,16 +30,24 @@ public class Master implements Callable<Integer> {
 
   @Option(names = {"-w", "--workers"}, description = "Workers IP addresses.", 
       paramLabel = "FILE", required = true)
-  private File workers;
+  private File workersFile;
+  
+  private final List<String> workers = new ArrayList<String>();
   
   @Option(names = {"-d", "--delete"})
   private boolean delete;
 
   private final static CommandLine comm = new CommandLine(new Master());
-
-  private static void printErr(String msg) {
+  
+  private void printErr(String msg) {
     var str = comm.getColorScheme().errorText(msg).toString();
     comm.getErr().println(str);
+  }
+  
+  private WorkerRemote getWorkerRemote(String ip) 
+    throws RemoteException, AccessException, NotBoundException {
+    var reg = LocateRegistry.getRegistry(ip);
+    return (WorkerRemote) reg.lookup(WorkerRemote.NAME);
   }
   
   @Override
@@ -43,7 +57,7 @@ public class Master implements Callable<Integer> {
           + "file with read permission is required.");
       return -1;
     }
-    if (!workers.exists() || !workers.canRead()) {
+    if (!workersFile.exists() || !workersFile.canRead()) {
       printErr("Invalid --workers parameter value. Correct file path to an existing "
           + "file with read permission is required.");
       return -1;
@@ -54,18 +68,26 @@ public class Master implements Callable<Integer> {
       printErr("Output file creation failed.");
       return -1;
     }   
-    var lines = Files.readAllLines(workers.toPath());
+    var lines = Files.readAllLines(workersFile.toPath());
     for (var ip : lines) {
       var reg = LocateRegistry.getRegistry(ip);
       var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
       if (!worker.getOK().equals("OK"))
         throw new RuntimeException("Host " + ip + " did not answered properly.");
+      workers.add(ip);
     }
     
     var text = new TextInputFormat();
-    var f = text.getSplits(input, 11);
-    for (var file : f) {
-      System.out.println(file.getName());
+    var splits = text.getSplits(input, workers.size());
+    int i = 0;
+    for (var s : splits) {
+      var worker = getWorkerRemote(workers.get(i++));
+      worker.createNewFile(input);
+      var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
+      byte[] buf = new byte[2048];
+      for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) {
+        worker.writeChunk(input, buf);
+      }
     }
 //    var reg = LocateRegistry.getRegistry(w);
 //    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
