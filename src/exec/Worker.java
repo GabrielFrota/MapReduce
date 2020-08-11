@@ -66,7 +66,7 @@ public class Worker implements Callable<Integer> {
     public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException {
       var in = new File(f.getName());
       var inputFormat = mapRed.getInputFormat();
-      var recordWriter = mapRed.getRecordWriter();
+      var recordWriter = mapRed.getMapWriter(new File(in.getName() + ".out"));
       var recordReader = inputFormat.getRecordReader(in);
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
