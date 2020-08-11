@@ -21,6 +21,7 @@ public class TextRecordWriter implements RecordWriter<String, String> {
   
   @Override
   public void close() throws IOException {
+    writer.flush();
     writer.close();
   }
   

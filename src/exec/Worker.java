@@ -82,9 +82,10 @@ public class Worker implements Callable<Integer> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException {
       var in = new File(f.getName());
+      var mapOut = new File(f.getName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
-      var recordWriter = mapRed.getMapWriter(new File(in.getName() + ".out"));
       var recordReader = inputFormat.getRecordReader(in);
+      var recordWriter = mapRed.getMapWriter(mapOut);     
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
