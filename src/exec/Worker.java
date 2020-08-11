@@ -60,7 +60,8 @@ public class Worker implements Callable<Integer> {
     
     @Override
     public void initWrite(File f) throws RemoteException, IOException {
-      out = Files.newOutputStream(f.toPath(), StandardOpenOption.APPEND);
+      var file = new File(f.getName());
+      out = Files.newOutputStream(file.toPath(), StandardOpenOption.APPEND);
       System.out.println(f.toPath());
     }
     
