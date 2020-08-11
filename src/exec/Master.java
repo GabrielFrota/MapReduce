@@ -91,8 +91,10 @@ public class Master implements Callable<Integer> {
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[2048];
         worker.initWrite(input);
-        for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) 
-          worker.write(buf);
+        for (int len = inStream.read(buf); len != -1; len = inStream.read(buf)) {
+          if (len == buf.length) worker.write(buf);
+          else worker.write(buf, len);
+        }
         worker.doneWrite();
       }
     }

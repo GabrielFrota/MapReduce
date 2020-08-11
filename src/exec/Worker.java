@@ -69,9 +69,12 @@ public class Worker implements Callable<Integer> {
       out.write(chunk);
     }
     
+    public void write(byte[] b, int len) throws RemoteException, IOException {
+      out.write(b, 0, len);
+    }
+    
     @Override
     public void doneWrite() throws RemoteException, IOException {
-      out.flush();
       out.close();
     }
     

@@ -23,6 +23,8 @@ public interface WorkerRemote extends Remote {
   
   public void write(byte[] chunk) throws RemoteException, IOException;
   
+  public void write(byte[] b, int len) throws RemoteException, IOException;
+  
   public void doneWrite() throws RemoteException, IOException;
   
   @SuppressWarnings("rawtypes")
