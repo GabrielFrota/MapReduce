@@ -19,7 +19,11 @@ public interface WorkerRemote extends Remote {
   
   public boolean exists(File f) throws RemoteException;
   
-  public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException;
+  public void initWrite(File f) throws RemoteException, IOException;
+  
+  public void write(byte[] chunk) throws RemoteException, IOException;
+  
+  public void doneWrite() throws RemoteException, IOException;
   
   @SuppressWarnings("rawtypes")
   public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException;

@@ -2,6 +2,7 @@ package exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -55,12 +56,20 @@ public class Worker implements Callable<Integer> {
       return file.exists();
     }
     
+    private OutputStream out;
+    
     @Override
-    public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException {
-      System.out.println(chunk);
-      var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, 
-          StandardOpenOption.WRITE, StandardOpenOption.APPEND);   
+    public void initWrite(File f) throws RemoteException, IOException {
+      out = Files.newOutputStream(f.toPath(), StandardOpenOption.APPEND);
+    }
+    
+    @Override
+    public void write(byte[] chunk) throws RemoteException, IOException {  
       out.write(chunk);
+    }
+    
+    @Override
+    public void doneWrite() throws RemoteException, IOException {
       out.close();
     }
     

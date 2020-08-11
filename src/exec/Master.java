@@ -90,8 +90,10 @@ public class Master implements Callable<Integer> {
         System.out.println("Sending split " + i + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[2048];
+        worker.initWrite(input);
         for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) 
-          worker.writeChunk(input, buf);
+          worker.write(buf);
+        worker.doneWrite();
       }
     }
     for (var w : workers) {
