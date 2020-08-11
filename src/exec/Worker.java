@@ -71,6 +71,7 @@ public class Worker implements Callable<Integer> {
     
     @Override
     public void doneWrite() throws RemoteException, IOException {
+      out.flush();
       out.close();
     }
     
