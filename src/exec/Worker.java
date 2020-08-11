@@ -58,8 +58,8 @@ public class Worker implements Callable<Integer> {
     @Override
     public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException {
       System.out.println("AQUI " + chunk.length);
-      var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-      out.flush();
+      var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, 
+          StandardOpenOption.WRITE, StandardOpenOption.APPEND);   
       out.write(chunk);
     }
     
