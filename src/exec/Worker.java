@@ -1,4 +1,4 @@
-package core;
+package exec;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import params.MapReduce;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -30,29 +31,47 @@ public class Worker implements Callable<Integer> {
     public String getOK() throws RemoteException {
       return "OK";
     }
+    
+    @Override
+    public String getIp() throws RemoteException {
+      return System.getProperty("java.rmi.server.hostname");
+    }
 
     @Override
     public boolean createNewFile(File f) throws RemoteException, IOException {
-      boolean ret = false;
-      var newFile = new File(f.getName());
-      try {
-        ret = newFile.createNewFile();
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
-      return ret;
+      var file = new File(f.getName());
+      return file.createNewFile();
     }
     
     @Override
-    public boolean delete(File f) throws RemoteException {   
-      return f.delete();
+    public boolean delete(File f) throws RemoteException {
+      var file = new File(f.getName());
+      return file.delete();
+    }
+    
+    @Override
+    public boolean exists(File f) throws RemoteException {
+      var file = new File(f.getName());
+      return file.exists();
     }
     
     @Override
     public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException {
       var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
       out.write(chunk);
-    }  
+    }
+    
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException {
+      var in = new File(f.getName());
+      var inputFormat = mapRed.getInputFormat();
+      var recordWriter = mapRed.getRecordWriter();
+      var recordReader = inputFormat.getRecordReader(in);
+      while (recordReader.readOneAndAdvance()) {
+        mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
+      }
+    }
     
   }
   

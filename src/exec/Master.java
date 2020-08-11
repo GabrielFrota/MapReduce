@@ -1,4 +1,4 @@
-package core;
+package exec;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import params.TestImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import props.TextInputFormat;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = true, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
@@ -34,8 +34,8 @@ public class Master implements Callable<Integer> {
   
   private final List<String> workers = new ArrayList<String>();
   
-  @Option(names = {"-d", "--delete"})
-  private boolean delete;
+  @Option(names = {"-ov", "--overwrite"})
+  private boolean overwrite;
 
   private final static CommandLine comm = new CommandLine(new Master());
   
@@ -76,23 +76,29 @@ public class Master implements Callable<Integer> {
         throw new RuntimeException("Host " + ip + " did not answered properly.");
       workers.add(ip);
     }
-    
-    var text = new TextInputFormat();
+    //
+    TestImpl test = new TestImpl();
+    var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
     int i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
-      var b = worker.createNewFile(input);
-      System.out.println(b);
-      var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
-      System.out.println("!");
-      byte[] buf = new byte[2048];
-      for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) {
-        worker.writeChunk(input, buf);
-        System.out.println("!!");
+      boolean exists = worker.exists(input);
+      if (!exists || overwrite) {
+        if (exists) worker.delete(input);
+        worker.createNewFile(input);
+        System.out.println("Sending split " + i + " to worker " + worker.getIp());
+        var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
+        byte[] buf = new byte[2048];
+        for (int err = inStream.read(buf); err != -1; err = inStream.read(buf)) 
+          worker.writeChunk(input, buf);
       }
     }
-    System.out.println("ok");
+    for (var w : workers) {
+      var worker = getWorkerRemote(w);
+      worker.doMap(input, test);
+    }
+    System.out.println("FINISHED");
 //    var reg = LocateRegistry.getRegistry(w);
 //    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
 //    var lines = Files.readString(input.toPath());

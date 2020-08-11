@@ -1,4 +1,4 @@
-package props;
+package params;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class TextInputFormat implements InputFormat<Long, String> {
+public class TextInputFormat implements InputFormat<String, String> {
   
   @Override
   public File[] getSplits(File in, int numSplits) throws IOException {
@@ -33,7 +33,7 @@ public class TextInputFormat implements InputFormat<Long, String> {
   }
   
   @Override
-  public RecordReader<Long, String> getRecordReader(File in) throws IOException {
+  public RecordReader<String, String> getRecordReader(File in) throws IOException {
     var rec = new TextRecordReader();
     rec.init(in);
     return rec;

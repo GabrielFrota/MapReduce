@@ -1,19 +1,28 @@
-package core;
+package exec;
 
 import java.io.File;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import params.MapReduce;
+
 public interface WorkerRemote extends Remote {
   
   public String getOK() throws RemoteException;
+  
+  public String getIp() throws RemoteException;
   
   public boolean createNewFile(File f) throws RemoteException, IOException;
   
   public boolean delete(File f) throws RemoteException;
   
+  public boolean exists(File f) throws RemoteException;
+  
   public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException;
+  
+  @SuppressWarnings("rawtypes")
+  public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException;
   
   public final static String NAME = "WorkerRemote";
 

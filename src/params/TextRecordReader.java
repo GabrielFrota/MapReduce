@@ -1,4 +1,4 @@
-package props;
+package params;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,12 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class TextRecordReader implements RecordReader<Long, String> {
+public class TextRecordReader implements RecordReader<String, String> {
   
   private BufferedReader reader;
-  private Long currentKey;
+  private String currentKey;
   private String currentValue;
-  private long currentLine;
+  private long cnt;
   
   @Override
   public void init(File in) throws FileNotFoundException, IOException {
@@ -19,7 +19,7 @@ public class TextRecordReader implements RecordReader<Long, String> {
   }
 
   @Override
-  public Long getCurrentKey() throws IOException {
+  public String getCurrentKey() throws IOException {
     return currentKey;
   }
 
@@ -30,10 +30,10 @@ public class TextRecordReader implements RecordReader<Long, String> {
 
   @Override
   public boolean readOneAndAdvance() throws IOException {
-    currentKey = currentLine;
+    currentKey = Long.toString(cnt);
     currentValue = reader.readLine();
     if (currentValue == null) return false;
-    currentLine++;
+    cnt += currentValue.getBytes().length;
     return true;
   }
 
