@@ -59,6 +59,7 @@ public class Worker implements Callable<Integer> {
     public void writeChunk(File f, byte[] chunk) throws RemoteException, IOException {
       System.out.println("AQUI " + chunk.length);
       var out = Files.newOutputStream(f.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+      out.flush();
       out.write(chunk);
     }
     
