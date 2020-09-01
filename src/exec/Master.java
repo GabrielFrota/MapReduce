@@ -8,8 +8,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 
 import params.TestImpl;
 import picocli.CommandLine;
@@ -98,10 +101,21 @@ public class Master implements Callable<Integer> {
         worker.doneWrite();
       }
     }
+    
+    var pool = ForkJoinPool.commonPool();
+    var tasks = new LinkedList<ForkJoinTask<String>>();
     for (var w : workers) {
-      var worker = getWorkerRemote(w);
-      worker.doMap(input, test);
+      var task = pool.submit(() -> {
+        var worker = getWorkerRemote(w);
+        worker.doMap(input, test);
+        return w;
+      });
+      tasks.add(task);
     }
+    for (var t : tasks) {
+      t.get();
+    }
+    
     System.out.println("FINISHED");
 //    var reg = LocateRegistry.getRegistry(w);
 //    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
