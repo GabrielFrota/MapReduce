@@ -1,6 +1,7 @@
 package exec;
 
 import java.io.File;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.rmi.AccessException;
@@ -78,7 +79,12 @@ public class Master implements Callable<Integer> {
       if (!worker.getOK().equals("OK"))
         throw new RuntimeException("Host " + ip + " did not answered properly.");
       workers.add(ip);
-    }
+    }   
+    
+    try (var sock = new Socket("www.google.com", 80)) {
+      System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      var reg = LocateRegistry.createRegistry(1098);
+    }  
     //
     TestImpl test = new TestImpl();
     var text = test.getInputFormat();
