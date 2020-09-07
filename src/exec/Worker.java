@@ -83,8 +83,8 @@ public class Worker implements Callable<Integer> {
     
     @Override
     @SuppressWarnings("rawtypes")
-    public void sendImplClass(Class<? extends MapReduce> clazz) throws Exception {
-      mapRed = clazz.getDeclaredConstructor().newInstance();
+    public void sendImplClass(Class<? extends MapReduce> clazz) throws Exception {    
+      mapRed = clazz.getConstructor().newInstance();
     }
     
     @Override
