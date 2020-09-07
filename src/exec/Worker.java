@@ -108,6 +108,7 @@ public class Worker implements Callable<Integer> {
   public Integer call() throws Exception {
     try (var sock = new Socket("www.google.com", 80)) {
       System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      System.setProperty("java.rmi.server.codebase", "192.168.15.4");
     }
     var impl = new WorkerRemoteImpl();
     var reg = LocateRegistry.createRegistry(1099);
