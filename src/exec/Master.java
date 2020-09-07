@@ -80,12 +80,12 @@ public class Master implements Callable<Integer> {
         throw new RuntimeException("Host " + ip + " did not answered properly.");
       workers.add(ip);
     }   
-    
-    try (var sock = new Socket("www.google.com", 80)) {
-      //System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
-      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:1098");
-      var reg = LocateRegistry.createRegistry(1098);
-    }  
+    System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
+//    try (var sock = new Socket("www.google.com", 80)) {
+//      //System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+//      
+//      //var reg = LocateRegistry.createRegistry(1098);
+//    }  
     //
     TestImpl test = new TestImpl();
     var text = test.getInputFormat();
