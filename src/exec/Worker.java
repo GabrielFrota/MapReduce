@@ -78,9 +78,18 @@ public class Worker implements Callable<Integer> {
       out.close();
     }
     
+    @SuppressWarnings("rawtypes")
+    private MapReduce mapRed;
+    
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void doMap(File f, MapReduce mapRed) throws RemoteException, IOException {
+    @SuppressWarnings("rawtypes")
+    public void sendImplClass(Class<? extends MapReduce> clazz) throws Exception {
+      mapRed = clazz.getDeclaredConstructor().newInstance();
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public void doMap(File f) throws RemoteException, IOException {
       var in = new File(f.getName());
       var mapOut = new File(f.getName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();

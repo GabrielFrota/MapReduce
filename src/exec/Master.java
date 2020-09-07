@@ -107,7 +107,8 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(w);
-        worker.doMap(input, test);
+        worker.sendImplClass(test.getClass());
+        worker.doMap(input);
         return w;
       });
       tasks.add(task);
