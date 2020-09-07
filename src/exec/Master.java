@@ -82,7 +82,8 @@ public class Master implements Callable<Integer> {
     }   
     
     try (var sock = new Socket("www.google.com", 80)) {
-      System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      //System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:1098");
       var reg = LocateRegistry.createRegistry(1098);
     }  
     //
