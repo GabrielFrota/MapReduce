@@ -106,6 +106,8 @@ public class Worker implements Callable<Integer> {
   
   @Override
   public Integer call() throws Exception {
+    System.setProperty("java.security.policy", "sec.policy");
+    System.setSecurityManager(new SecurityManager());
     try (var sock = new Socket("www.google.com", 80)) {
       System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
       System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
