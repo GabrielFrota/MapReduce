@@ -1,2 +1,2 @@
-rm -f bin/params/TestImpl.class src/params/TestImpl.java
+rm -f bin/test/*.class src/test/*.java
 java -cp ./bin exec/Worker

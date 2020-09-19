@@ -1,9 +1,15 @@
-package params;
+package test;
 
 import java.io.File;
 import java.io.IOException;
 
-public class TestImplq implements MapReduce<String, String, String, String> {
+import params.InputFormat;
+import params.MapReduce;
+import params.RecordWriter;
+import params.TextInputFormat;
+import params.TextRecordWriter;
+
+public class TestImpl implements MapReduce<String, String, String, String> {
 
   @Override
   public InputFormat<String, String> getInputFormat() {
@@ -19,7 +25,7 @@ public class TestImplq implements MapReduce<String, String, String, String> {
 
   @Override
   public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    w.write(k, "111");
+    w.write(k, "1112222222222222222222");
   }
   
 }

@@ -25,7 +25,7 @@ import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
 import params.MapReduce;
-import params.TestImplq;
+import test.TestImpl;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
@@ -41,7 +41,7 @@ public class Master implements Callable<Integer> {
 
     @Override
     public MapReduce getTaskConf() throws RemoteException {
-      return new TestImplq();
+      return new TestImpl();
     }
 
   }
@@ -125,7 +125,7 @@ public class Master implements Callable<Integer> {
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
     
-    MapReduce test = new TestImplq();
+    MapReduce test = new TestImpl();
     
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
