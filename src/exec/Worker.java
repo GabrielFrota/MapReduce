@@ -85,8 +85,7 @@ public class Worker implements Callable<Integer> {
     public void sendImplClass() throws Exception {
       var reg = LocateRegistry.getRegistry("192.168.15.4", 1100);
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
-      var mapRed = master.getTaskConf();
-      System.out.println(mapRed.getClass().getName());
+      mapRed = master.getTaskConf();
     }
     
     @Override
