@@ -106,7 +106,7 @@ public class Master implements Callable<Integer> {
 //    }  
     //
     
-    //var fileServer = new ClassFileServer(8080, "/bin/params/");
+    var fileServer = new ClassFileServer(8080, "./bin");
     
 //    System.setProperty("java.security.policy", "sec.policy");
 //    System.setSecurityManager(new SecurityManager());

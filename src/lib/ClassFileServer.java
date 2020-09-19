@@ -32,8 +32,11 @@ public class ClassFileServer extends ClassServer {
      */
     public ClassFileServer(int port, String classpath) throws IOException
     {
-	super(port);
-	this.classpath = classpath;
+       super(port);
+       this.classpath = classpath;
+       for (var s : new File(classpath).list()) {
+          System.out.println(s);
+       }
     }
 
     /**
@@ -101,7 +104,9 @@ public class ClassFileServer extends ClassServer {
 	if (args.length >= 2) {
 	    classpath = args[1];
 	}
-
+	for (var s : new File(classpath).list()) {
+	  System.out.println(s);
+	}
 	try {
 	    new ClassFileServer(port, classpath);
 	} catch (IOException e) {

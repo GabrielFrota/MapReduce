@@ -111,6 +111,7 @@ public class Worker implements Callable<Integer> {
     System.setSecurityManager(new SecurityManager());
     try (var sock = new Socket("www.google.com", 80)) {
       System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:8080/");
     }
     var impl = new WorkerRemoteImpl();
     var reg = LocateRegistry.createRegistry(1099);
