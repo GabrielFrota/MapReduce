@@ -31,7 +31,7 @@ public class Master implements Callable<Integer> {
     private static final long serialVersionUID = 1L;
 
     protected MasterRemoteImpl() throws RemoteException {
-      super(1099);
+      super(1100);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class Master implements Callable<Integer> {
     var reg = LocateRegistry.createRegistry(1100);
     var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(MasterRemote.NAME, impl);
-    System.out.println("RMI Registry is binded to address " + ip + ":1099 exporting MasterRemote interface.");
+    System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
     
     TestImpl test = new TestImpl();
     var text = test.getInputFormat();
@@ -144,7 +144,7 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(w);
-        worker.sendImplClass(test.getClass());
+        worker.sendImplClass();
         worker.doMap(input);
         return w;
       });

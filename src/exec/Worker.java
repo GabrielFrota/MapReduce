@@ -82,10 +82,11 @@ public class Worker implements Callable<Integer> {
     private MapReduce mapRed;
     
     @Override
-    @SuppressWarnings("rawtypes")
-    public void sendImplClass(Class<? extends MapReduce> clazz) throws Exception {
-      System.out.println(clazz.getName());
-      mapRed = clazz.getConstructor().newInstance();
+    public void sendImplClass() throws Exception {
+      var reg = LocateRegistry.getRegistry("192.168.15.4", 1100);
+      var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
+      var mapRed = master.getTaskConf();
+      System.out.println(mapRed.getClass().getName());
     }
     
     @Override

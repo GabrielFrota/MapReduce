@@ -27,8 +27,7 @@ public interface WorkerRemote extends Remote {
   
   public void doneWrite() throws RemoteException, IOException;
   
-  @SuppressWarnings("rawtypes")
-  public void sendImplClass(Class<? extends MapReduce> clazz) throws Exception;
+  public void sendImplClass() throws Exception;
   
   public void doMap(File f) throws RemoteException, IOException;
   
