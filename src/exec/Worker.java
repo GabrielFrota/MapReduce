@@ -100,8 +100,8 @@ public class Worker implements Callable<Integer> {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
       recordWriter.close();
-      System.out.println(mapRed.getClass().getClassLoader().getName());
       mapRed = null;
+      System.gc();
     }
 
   }

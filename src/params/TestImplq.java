@@ -3,9 +3,9 @@ package params;
 import java.io.File;
 import java.io.IOException;
 
-public class TestImpl implements MapReduce<String, String, String, String> {
+public class TestImplq implements MapReduce<String, String, String, String> {
 
-  private static final long serialVersionUID = 11L;
+  private static final long serialVersionUID = 1L;
 
   @Override
   public InputFormat<String, String> getInputFormat() {
@@ -21,9 +21,9 @@ public class TestImpl implements MapReduce<String, String, String, String> {
 
   @Override
   public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    w.write(k, "11111111333333333333333");
+    w.write(k, "111114444444444444444");
   }
   
 }
 
-//w.write(v, k);
+

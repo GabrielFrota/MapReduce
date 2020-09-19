@@ -3,12 +3,14 @@ package exec;
 import java.io.File;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,12 +18,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
+import javax.tools.ToolProvider;
+
 import lib.ClassFileServer;
 import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
 import params.MapReduce;
-import params.TestImpl;
+import params.TestImplq;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
@@ -37,7 +41,7 @@ public class Master implements Callable<Integer> {
 
     @Override
     public MapReduce getTaskConf() throws RemoteException {
-      return new TestImpl();
+      return new TestImplq();
     }
 
   }
@@ -121,7 +125,8 @@ public class Master implements Callable<Integer> {
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
     
-    TestImpl test = new TestImpl();
+    MapReduce test = new TestImplq();
+    
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
     int i = 0;
