@@ -106,14 +106,14 @@ public class Master implements Callable<Integer> {
 //    }  
     //
     
-    var fileServer = new ClassFileServer(8080, "/bin/params/");
+    //var fileServer = new ClassFileServer(8080, "/bin/params/");
     
 //    System.setProperty("java.security.policy", "sec.policy");
 //    System.setSecurityManager(new SecurityManager());
     try (var sock = new Socket("www.google.com", 80)) {
       System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
-      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
-      //System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
+      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:8080/");
+      //System.setProperty("java.rmi.server.codebase", );
     }
     var impl = new MasterRemoteImpl();
     var reg = LocateRegistry.createRegistry(1100);
