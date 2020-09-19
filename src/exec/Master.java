@@ -8,6 +8,7 @@ import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
+import params.MapReduce;
 import params.TestImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -23,6 +25,21 @@ import picocli.CommandLine.Option;
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
 public class Master implements Callable<Integer> {
+  
+  private class MasterRemoteImpl extends UnicastRemoteObject implements MasterRemote {
+    
+    private static final long serialVersionUID = 1L;
+
+    protected MasterRemoteImpl() throws RemoteException {
+      super(1099);
+    }
+
+    @Override
+    public MapReduce getTaskConf() throws RemoteException {
+      return new TestImpl();
+    }
+
+  }
   
   @Option(names = {"-i", "--input"}, description = "Input file path.", 
       paramLabel = "FILE", required = true)
@@ -80,13 +97,26 @@ public class Master implements Callable<Integer> {
         throw new RuntimeException("Host " + ip + " did not answered properly.");
       workers.add(ip);
     }   
-    System.setProperty("java.rmi.server.codebase", "http://bin/params/");
+ //   System.setProperty("java.rmi.server.codebase", "http://bin/params/");
 //    try (var sock = new Socket("www.google.com", 80)) {
 //      //System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
 //      
 //      //var reg = LocateRegistry.createRegistry(1098);
 //    }  
-    // -i bases/int_base_59.data -o out.txt -w workers.txt
+    //
+    
+    System.setProperty("java.security.policy", "sec.policy");
+    System.setSecurityManager(new SecurityManager());
+    try (var sock = new Socket("www.google.com", 80)) {
+      System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
+      //System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
+    }
+    var impl = new MasterRemoteImpl();
+    var reg = LocateRegistry.createRegistry(1099);
+    var ip = System.getProperty("java.rmi.server.hostname");
+    reg.bind(MasterRemote.NAME, impl);
+    System.out.println("RMI Registry is binded to address " + ip + ":1099 exporting MasterRemote interface.");
+    
     TestImpl test = new TestImpl();
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
