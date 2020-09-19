@@ -5,8 +5,6 @@ import java.io.IOException;
 
 public class TestImplq implements MapReduce<String, String, String, String> {
 
-  private static final long serialVersionUID = 1L;
-
   @Override
   public InputFormat<String, String> getInputFormat() {
     return new TextInputFormat();
