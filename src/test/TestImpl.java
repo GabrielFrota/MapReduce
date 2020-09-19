@@ -11,6 +11,8 @@ import params.TextRecordWriter;
 
 public class TestImpl implements MapReduce<String, String, String, String> {
 
+  private static final long serialVersionUID = 1L;
+
   @Override
   public InputFormat<String, String> getInputFormat() {
     return new TextInputFormat();
@@ -25,7 +27,7 @@ public class TestImpl implements MapReduce<String, String, String, String> {
 
   @Override
   public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    w.write(k, "1112222222222222222222");
+    w.write(k, "111222233333333333333333333333333333333322");
   }
   
 }

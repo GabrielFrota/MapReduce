@@ -33,6 +33,7 @@ import java.net.*;
  *
  * @see ClassFileServer
  */
+@SuppressWarnings("all")
 public abstract class ClassServer implements Runnable {
 
     private ServerSocket server = null;

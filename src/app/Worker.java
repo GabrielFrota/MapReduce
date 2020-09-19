@@ -1,4 +1,4 @@
-package exec;
+package app;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +85,7 @@ public class Worker implements Callable<Integer> {
     public void sendImplClass() throws Exception {
       var reg = LocateRegistry.getRegistry("192.168.15.4", 1100);
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
-      mapRed = master.getTaskConf();
+      mapRed = master.getMapReduceImpl();
     }
     
     @Override

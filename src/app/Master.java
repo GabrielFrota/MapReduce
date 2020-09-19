@@ -1,4 +1,4 @@
-package exec;
+package app;
 
 import java.io.File;
 import java.net.Socket;
@@ -18,8 +18,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
-import javax.tools.ToolProvider;
-
 import lib.ClassFileServer;
 import lib.CommandLine;
 import lib.CommandLine.Command;
@@ -38,9 +36,10 @@ public class Master implements Callable<Integer> {
     protected MasterRemoteImpl() throws RemoteException {
       super(1100);
     }
-
+    
     @Override
-    public MapReduce getTaskConf() throws RemoteException {
+    @SuppressWarnings("rawtypes")
+    public MapReduce getMapReduceImpl() throws RemoteException {
       return new TestImpl();
     }
 
@@ -125,7 +124,11 @@ public class Master implements Callable<Integer> {
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
     
-    MapReduce test = new TestImpl();
+    var newFile = Paths.get("_" + LocalDateTime.now().toString() + ".class");
+    var source = Paths.get("bin/test/TestImpl.class");
+    Files.copy(source, newFile);
+    var clazz = this.getClass().getClassLoader().loadClass(newFile.getFileName().toString());
+    MapReduce test = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());

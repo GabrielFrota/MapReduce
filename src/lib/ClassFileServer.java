@@ -19,6 +19,7 @@ import java.net.*;
  * doc for the "Main" method for how to run this
  * server.
  */
+@SuppressWarnings("all")
 public class ClassFileServer extends ClassServer {
     
     private String classpath;
