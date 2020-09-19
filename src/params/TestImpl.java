@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class TestImpl implements MapReduce<String, String, String, String> {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 11L;
 
   @Override
   public InputFormat<String, String> getInputFormat() {
@@ -21,7 +21,7 @@ public class TestImpl implements MapReduce<String, String, String, String> {
 
   @Override
   public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    w.write(k, "1");
+    w.write(k, "11111111");
   }
   
 }
