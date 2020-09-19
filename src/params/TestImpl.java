@@ -21,8 +21,9 @@ public class TestImpl implements MapReduce<String, String, String, String> {
 
   @Override
   public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    //w.write(v, k);
-    w.write(k, "33555");
+    w.write(k, "1");
   }
   
 }
+
+//w.write(v, k);

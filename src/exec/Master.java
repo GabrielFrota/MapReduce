@@ -20,7 +20,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "core/Master", mixinStandardHelpOptions = true, 
+@Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
 public class Master implements Callable<Integer> {
   
@@ -32,13 +32,13 @@ public class Master implements Callable<Integer> {
       paramLabel = "FILE", required = true)
   private File output;
 
-  @Option(names = {"-w", "--workers"}, description = "Workers IP addresses.", 
+  @Option(names = {"-w", "--workers"}, description = "Workers IP addresses file path.", 
       paramLabel = "FILE", required = true)
   private File workersFile;
   
   private final List<String> workers = new ArrayList<String>();
   
-  @Option(names = {"-ov", "--overwrite"})
+  @Option(names = {"-v", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
 
   private final static CommandLine comm = new CommandLine(new Master());
@@ -86,7 +86,7 @@ public class Master implements Callable<Integer> {
 //      
 //      //var reg = LocateRegistry.createRegistry(1098);
 //    }  
-    //
+    // -i bases/int_base_59.data -o out.txt -w workers.txt
     TestImpl test = new TestImpl();
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
@@ -122,8 +122,7 @@ public class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }
-    
+    }        
     System.out.println("FINISHED");
 //    var reg = LocateRegistry.getRegistry(w);
 //    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
