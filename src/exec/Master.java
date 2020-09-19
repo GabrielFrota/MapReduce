@@ -112,7 +112,7 @@ public class Master implements Callable<Integer> {
       //System.setProperty("java.rmi.server.codebase", "http://192.168.15.4");
     }
     var impl = new MasterRemoteImpl();
-    var reg = LocateRegistry.createRegistry(1099);
+    var reg = LocateRegistry.createRegistry(1100);
     var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1099 exporting MasterRemote interface.");
