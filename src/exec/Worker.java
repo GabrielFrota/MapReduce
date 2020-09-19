@@ -12,9 +12,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import lib.CommandLine;
+import lib.CommandLine.Command;
 import params.MapReduce;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
 
 @Command(name = "core/Worker", mixinStandardHelpOptions = true, 
   description = "Worker proccess for distributed MapReduce jobs in a cluster.")
