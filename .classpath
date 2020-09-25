@@ -6,5 +6,16 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/asm-9.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://asm.ow2.io/javadoc/index.html?org/objectweb/asm/package-summary.html"/>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/asm-commons-9.0.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

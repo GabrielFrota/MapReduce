@@ -1,6 +1,8 @@
 package app;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,7 +20,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
-import lib.ClassFileServer;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.SimpleRemapper;
+
 import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
@@ -29,8 +35,7 @@ import test.TestImpl;
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
 public class Master implements Callable<Integer> {
   
-  private class MasterRemoteImpl extends UnicastRemoteObject implements MasterRemote {
-    
+  private class MasterRemoteImpl extends UnicastRemoteObject implements MasterRemote {  
     private static final long serialVersionUID = 1L;
 
     protected MasterRemoteImpl() throws RemoteException {
@@ -42,7 +47,19 @@ public class Master implements Callable<Integer> {
     public MapReduce getMapReduceImpl() throws RemoteException {
       return new TestImpl();
     }
-
+  }
+  
+  private class MasterClassLoader extends ClassLoader {  
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+      byte[] b = null;
+      try {
+        b = Files.readAllBytes(Paths.get(name));
+      } catch (Exception ex) {
+        ex.printStackTrace();
+      }
+      return defineClass(name, b, 0, b.length);
+    }  
   }
   
   @Option(names = {"-i", "--input"}, description = "Input file path.", 
@@ -109,7 +126,7 @@ public class Master implements Callable<Integer> {
 //    }  
     //
     
-    var fileServer = new ClassFileServer(8080, "./bin");
+    //var fileServer = new ClassFileServer(8080, "./bin");
     
 //    System.setProperty("java.security.policy", "sec.policy");
 //    System.setSecurityManager(new SecurityManager());
@@ -123,12 +140,19 @@ public class Master implements Callable<Integer> {
     var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
-    
-    var newFile = Paths.get("_" + LocalDateTime.now().toString() + ".class");
-    var source = Paths.get("bin/test/TestImpl.class");
-    Files.copy(source, newFile);
-    var clazz = this.getClass().getClassLoader().loadClass(newFile.getFileName().toString());
+     
+    var timestamp = "_" + LocalDateTime.now().toString();
+    var name = timestamp + ".class";
+    byte[] b1 = Files.readAllBytes(Paths.get("bin/test/TestImpl.class"));
+    ClassReader cr = new ClassReader(b1);
+    ClassWriter cw = new ClassWriter(0);
+    ClassRemapper re = new ClassRemapper(cw, new SimpleRemapper("TestImpl", timestamp));
+    cr.accept(re, ClassReader.EXPAND_FRAMES);
+    Files.write(Paths.get("bin/test/" + name), cw.toByteArray(), StandardOpenOption.CREATE);
+
+    var clazz = new MasterClassLoader().loadClass(Paths.get("bin/test/" + name).toString());
     MapReduce test = (MapReduce) clazz.getDeclaredConstructor().newInstance();
+    Files.delete(Paths.get("bin/test/" + name));
     
     var text = test.getInputFormat();
     var splits = text.getSplits(input, workers.size());
