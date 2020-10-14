@@ -1,8 +1,6 @@
 package app;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,26 +12,34 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
+import lib.ClassFileServer;
 import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
 import params.MapReduce;
-import test.TestImpl;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
 public class Master implements Callable<Integer> {
+  
+  private String timestamp = "_" + LocalDateTime.now().toString().replace(".", "_");
+  @SuppressWarnings("rawtypes")
+  private MapReduce mapRed;
   
   private class MasterRemoteImpl extends UnicastRemoteObject implements MasterRemote {  
     private static final long serialVersionUID = 1L;
@@ -45,19 +51,12 @@ public class Master implements Callable<Integer> {
     @Override
     @SuppressWarnings("rawtypes")
     public MapReduce getMapReduceImpl() throws RemoteException {
-      return new TestImpl();
+      return mapRed;
     }
   }
   
-  private class MasterClassLoader extends ClassLoader {  
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-      byte[] b = null;
-      try {
-        b = Files.readAllBytes(Paths.get(name));
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
+  private class MasterClassLoader extends ClassLoader {
+    public Class<?> loadClass(String name, byte[] b) {
       return defineClass(name, b, 0, b.length);
     }  
   }
@@ -76,8 +75,12 @@ public class Master implements Callable<Integer> {
   
   private final List<String> workers = new ArrayList<String>();
   
-  @Option(names = {"-v", "--overwrite"}, description = "Overwrite splits in Workers.")
+  @Option(names = {"-ov", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
+  
+  @Option(names = {"-mp", "--mapreduce"}, description = "MapReduce implementation class file path.", 
+      paramLabel = "FILE", required = true)
+  private File mapReduceFile;
 
   private final static CommandLine comm = new CommandLine(new Master());
   
@@ -109,7 +112,39 @@ public class Master implements Callable<Integer> {
     if (!output.createNewFile()) {
       printErr("Output file creation failed.");
       return -1;
-    }   
+    }
+    if (!mapReduceFile.exists() || !mapReduceFile.canRead()) {
+      printErr("Invalid --mapreduce parameter value. Correct file path to an existing "
+          + "file with read permission is required.");
+      return -1;
+    }
+    
+    var remapperIn = new HashMap<String, String>();
+    byte[] b = Files.readAllBytes(mapReduceFile.toPath());
+    var cr = new ClassReader(b);
+    cr.accept(new ClassVisitor(Opcodes.ASM7) {
+      @Override
+      public void visit(int version, int access, String name, String signature, 
+                        String superName, String[] interfaces) {
+        var strs = name.split("/");
+        strs[strs.length - 1] = timestamp;
+        var sj = new StringJoiner("/");
+        for (var s : strs) 
+          sj.add(s);
+        remapperIn.put(name, sj.toString());
+      }
+    }, 0);
+    var cw = new ClassWriter(0);
+    var re = new ClassRemapper(cw, new SimpleRemapper(remapperIn));
+    cr.accept(re, 0);
+    var tempFilePath = remapperIn.values().iterator().next() + ".class";
+    var tempFileFullPath = Paths.get("bin/" + tempFilePath);
+    byte[] bClazz = cw.toByteArray(); 
+    Files.write(tempFileFullPath, bClazz, StandardOpenOption.CREATE);
+    var clazz = new MasterClassLoader().loadClass(tempFilePath.split("\\.")[0]
+        .replace("/", "."), bClazz);
+    mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
+    
     var lines = Files.readAllLines(workersFile.toPath());
     for (var ip : lines) {
       var reg = LocateRegistry.getRegistry(ip);
@@ -126,7 +161,7 @@ public class Master implements Callable<Integer> {
 //    }  
     //
     
-    //var fileServer = new ClassFileServer(8080, "./bin");
+    var fileServer = new ClassFileServer(8080, "./bin");
     
 //    System.setProperty("java.security.policy", "sec.policy");
 //    System.setSecurityManager(new SecurityManager());
@@ -140,21 +175,8 @@ public class Master implements Callable<Integer> {
     var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(MasterRemote.NAME, impl);
     System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
-     
-    var timestamp = "_" + LocalDateTime.now().toString();
-    var name = timestamp + ".class";
-    byte[] b1 = Files.readAllBytes(Paths.get("bin/test/TestImpl.class"));
-    ClassReader cr = new ClassReader(b1);
-    ClassWriter cw = new ClassWriter(0);
-    ClassRemapper re = new ClassRemapper(cw, new SimpleRemapper("TestImpl", timestamp));
-    cr.accept(re, ClassReader.EXPAND_FRAMES);
-    Files.write(Paths.get("bin/test/" + name), cw.toByteArray(), StandardOpenOption.CREATE);
-
-    var clazz = new MasterClassLoader().loadClass(Paths.get("bin/test/" + name).toString());
-    MapReduce test = (MapReduce) clazz.getDeclaredConstructor().newInstance();
-    Files.delete(Paths.get("bin/test/" + name));
-    
-    var text = test.getInputFormat();
+         
+    var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, workers.size());
     int i = 0;
     for (var s : splits) {

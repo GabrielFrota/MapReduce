@@ -1,6 +1,5 @@
 package params;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -10,7 +9,7 @@ public interface MapReduce <K1 extends Comparable<K1> & Serializable, V1 extends
   
   public InputFormat<K1, V1> getInputFormat();
   
-  public RecordWriter<K2, V2> getMapWriter(File out) throws IOException;
+  public RecordWriter<K2, V2> getMapWriter() throws IOException;
   
   public void map(K1 k, V1 v, RecordWriter<K2, V2> w) throws IOException;
   

@@ -95,7 +95,8 @@ public class Worker implements Callable<Integer> {
       var mapOut = new File(f.getName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = mapRed.getMapWriter(mapOut);     
+      var recordWriter = mapRed.getMapWriter();
+      recordWriter.init(mapOut);
       while (recordReader.readOneAndAdvance()) 
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
