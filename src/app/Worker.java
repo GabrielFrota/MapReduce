@@ -78,12 +78,17 @@ public class Worker implements Callable<Integer> {
       out.close();
     }
     
+    private String masterIp;
+    @Override
+    public void setMasterIp(String ip) throws RemoteException {
+      masterIp = ip;
+    }
+    
     @SuppressWarnings("rawtypes")
     private MapReduce mapRed;
-    
     @Override
     public void sendImplClass() throws Exception {
-      var reg = LocateRegistry.getRegistry("192.168.15.4", 1100);
+      var reg = LocateRegistry.getRegistry(masterIp, 1100);
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
       mapRed = master.getMapReduceImpl();
     }
@@ -101,7 +106,6 @@ public class Worker implements Callable<Integer> {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
       recordWriter.close();
-      System.out.println(mapRed.getClass().getClassLoader().toString());
     }
 
   }

@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import params.MapReduce;
-
 public interface WorkerRemote extends Remote {
   
   public String getOK() throws RemoteException;
   
   public String getIp() throws RemoteException;
+  
+  public void setMasterIp(String ip) throws RemoteException;
   
   public boolean createNewFile(File f) throws RemoteException, IOException;
   

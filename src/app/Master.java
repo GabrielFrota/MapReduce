@@ -145,37 +145,29 @@ public class Master implements Callable<Integer> {
         .replace("/", "."), bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
-    var lines = Files.readAllLines(workersFile.toPath());
-    for (var ip : lines) {
-      var reg = LocateRegistry.getRegistry(ip);
-      var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-      if (!worker.getOK().equals("OK"))
-        throw new RuntimeException("Host " + ip + " did not answered properly.");
-      workers.add(ip);
-    }   
- //   System.setProperty("java.rmi.server.codebase", "http://bin/params/");
-//    try (var sock = new Socket("www.google.com", 80)) {
-//      //System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
-//      
-//      //var reg = LocateRegistry.createRegistry(1098);
-//    }  
-    //
-    
-    var fileServer = new ClassFileServer(8080, "./bin");
-    
-//    System.setProperty("java.security.policy", "sec.policy");
-//    System.setSecurityManager(new SecurityManager());
+    var fileServer = new ClassFileServer(8080, "./bin");  
     try (var sock = new Socket("www.google.com", 80)) {
-      System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
-      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:8080/");
-      //System.setProperty("java.rmi.server.codebase", );
+      var addr = sock.getLocalAddress().getHostAddress();
+      System.setProperty("java.rmi.server.hostname", addr);
+      System.setProperty("java.rmi.server.codebase", "http://" + addr + ":8080/");
     }
     var impl = new MasterRemoteImpl();
     var reg = LocateRegistry.createRegistry(1100);
-    var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(MasterRemote.NAME, impl);
-    System.out.println("RMI Registry is binded to address " + ip + ":1100 exporting MasterRemote interface.");
-         
+    System.out.println("RMI Registry is binded to address " 
+        + System.getProperty("java.rmi.server.hostname") 
+        + ":1100 exporting MasterRemote interface.");
+    
+    var lines = Files.readAllLines(workersFile.toPath());
+    for (var ip : lines) {
+      var worker = getWorkerRemote(ip);
+      if (!worker.getOK().equals("OK"))
+        throw new RuntimeException("Host " + ip + " did not answered properly.");
+      workers.add(ip);
+      worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
+      worker.sendImplClass();
+    }   
+    
     var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, workers.size());
     int i = 0;
@@ -202,7 +194,6 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(w);
-        worker.sendImplClass();
         worker.doMap(input);
         return w;
       });
@@ -212,15 +203,7 @@ public class Master implements Callable<Integer> {
       t.get();
     }        
     System.out.println("FINISHED");
-//    var reg = LocateRegistry.getRegistry(w);
-//    var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-//    var lines = Files.readString(input.toPath());
-//    int ret = worker.sendMapChunk(lines);
-//    System.out.println(ret);
-//    if (isMaster)
-//      return new Master(input, output, workers).call();
-//    else
-//      return new Worker().call();
+    
     return 0;
   }
 
