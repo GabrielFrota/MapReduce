@@ -8,9 +8,7 @@ public interface MapReduce <K1 extends Comparable<K1> & Serializable, V1 extends
   extends Serializable {
   
   public InputFormat<K1, V1> getInputFormat();
-  
-  public RecordWriter<K2, V2> getMapWriter() throws IOException;
-  
+    
   public void map(K1 k, V1 v, RecordWriter<K2, V2> w) throws IOException;
   
 }

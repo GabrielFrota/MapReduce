@@ -6,7 +6,6 @@ import params.InputFormat;
 import params.MapReduce;
 import params.RecordWriter;
 import params.TextInputFormat;
-import params.TextRecordWriter;
 
 public class TestImplementation implements MapReduce<String, String, String, String> {
 
@@ -15,12 +14,6 @@ public class TestImplementation implements MapReduce<String, String, String, Str
   @Override
   public InputFormat<String, String> getInputFormat() {
     return new TextInputFormat();
-  }
-
-  @Override
-  public RecordWriter<String, String> getMapWriter() throws IOException {
-    var rec = new TextRecordWriter();
-    return rec;
   }
 
   @Override

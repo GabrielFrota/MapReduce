@@ -14,6 +14,7 @@ import java.util.concurrent.Callable;
 
 import lib.CommandLine;
 import lib.CommandLine.Command;
+import params.DefaultRecordWriter;
 import params.MapReduce;
 
 @Command(name = "core/Worker", mixinStandardHelpOptions = true, 
@@ -100,7 +101,7 @@ public class Worker implements Callable<Integer> {
       var mapOut = new File(f.getName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = mapRed.getMapWriter();
+      var recordWriter = new DefaultRecordWriter();
       recordWriter.init(mapOut);
       while (recordReader.readOneAndAdvance()) 
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
