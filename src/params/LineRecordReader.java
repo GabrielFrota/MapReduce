@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class TextRecordReader implements RecordReader<String, String> {
+public class LineRecordReader implements RecordReader<String, String> {
   
   private BufferedReader reader;
   private String currentKey;

@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
-public interface RecordWriter<K extends Object, V extends Object> extends Closeable {
+public interface RecordWriter<K, V> extends Closeable {
   
   public void init(File out) throws IOException;
   
