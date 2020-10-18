@@ -7,7 +7,7 @@ import params.MapReduce;
 import params.RecordWriter;
 import params.TextInputFormat;
 
-public class TestImplementation implements MapReduce<String, String, String, String> {
+public class TestImplementation implements MapReduce<String, String, String, Long> {
 
   private static final long serialVersionUID = 1L;
 
@@ -17,8 +17,8 @@ public class TestImplementation implements MapReduce<String, String, String, Str
   }
 
   @Override
-  public void map(String k, String v, RecordWriter<String, String> w) throws IOException {
-    w.write(k, "11");
+  public void map(String k, String v, RecordWriter<String, Long> w) throws IOException {
+    w.write(k, 22L);
   }
   
 }

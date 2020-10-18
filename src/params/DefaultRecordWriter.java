@@ -5,9 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class DefaultRecordWriter implements RecordWriter<String, String> {
+public class DefaultRecordWriter implements RecordWriter<Object, Object> {
   
   private BufferedWriter writer;
+  private char GROUP_SEPARATOR = 0x1d;
   private char RECORD_SEPARATOR = 0x1e;
   private char UNIT_SEPARATOR = 0x1f;
     
@@ -17,8 +18,8 @@ public class DefaultRecordWriter implements RecordWriter<String, String> {
   }
 
   @Override
-  public void write(String key, String value) throws IOException {
-    writer.write(key + UNIT_SEPARATOR + value + RECORD_SEPARATOR);
+  public void write(Object key, Object value) throws IOException {
+    writer.write(key.toString() + UNIT_SEPARATOR + value.toString() + RECORD_SEPARATOR);
   }
   
   @Override
