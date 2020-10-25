@@ -146,6 +146,7 @@ public class Master implements Callable<Integer> {
         .replace("/", "."), bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
+    @SuppressWarnings("unused")
     var fileServer = new ClassFileServer(8080, "./bin");  
     try (var sock = new Socket("www.google.com", 80)) {
       var addr = sock.getLocalAddress().getHostAddress();

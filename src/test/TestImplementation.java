@@ -7,7 +7,7 @@ import inter.InputFormat;
 import inter.MapReduce;
 import inter.RecordWriter;
 
-public class TestImplementation implements MapReduce<Long, String, Long, String> {
+public class TestImplementation extends MapReduce<Long, String, Long, String> {
 
   private static final long serialVersionUID = 1L;
 

@@ -88,7 +88,6 @@ public class Worker implements Callable<Integer> {
     private MapReduce mapRed;
     @Override
     public void sendImplClass() throws Exception {
-      System.out.println(System.getProperty("java.rmi.server.codebase"));
       var reg = LocateRegistry.getRegistry(masterIp, 1100);
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
       mapRed = master.getMapReduceImpl();
