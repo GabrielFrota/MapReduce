@@ -52,8 +52,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     for (var p : parts) {
       Collections.sort(p);
       for (var rec : p) {
-        writer.write(rec.getKey().toString() + UNIT_SEPARATOR
-            + rec.getValue().toString() + RECORD_SEPARATOR);
+        writer.write(rec.getKey().toString() + "\t"
+            + rec.getValue().toString() + "\t");
       }
       writer.write("\n");
     }
