@@ -18,7 +18,8 @@ public class TestImplementation extends MapReduce<Long, String, Long, String> {
 
   @Override
   public void map(Long k, String v, RecordWriter<Long, String> w) throws IOException {
-    w.write(k, "1");
+    var arr = v.split(",");
+    w.write(k, arr[arr.length - 1]);
   }
   
 }
