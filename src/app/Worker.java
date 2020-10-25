@@ -101,7 +101,6 @@ public class Worker implements Callable<Integer> {
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var recordWriter = mapRed.getMapWriter();
-      System.out.println(mapRed.props.size());
       recordWriter.init(mapOut, mapRed.getWorkersNum());
       while (recordReader.readOneAndAdvance()) 
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
