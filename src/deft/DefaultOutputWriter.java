@@ -55,7 +55,7 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
         writer.write(rec.getKey().toString() + UNIT_SEPARATOR
             + rec.getValue().toString() + RECORD_SEPARATOR);
       }
-      writer.write(GROUP_SEPARATOR);
+      writer.write("\n");
     }
     writer.close();
   }
