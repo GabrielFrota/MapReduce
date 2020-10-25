@@ -180,7 +180,7 @@ public class Master implements Callable<Integer> {
       if (!exists || overwrite) {
         if (exists) worker.delete(input);
         worker.createNewFile(input);
-        System.out.println("Sending split " + i + " to worker " + worker.getIp());
+        System.out.println("Sending " + s + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[2048];
         worker.initWrite(input);
