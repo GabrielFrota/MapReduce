@@ -204,7 +204,8 @@ public class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }        
+    }
+    
     
     System.out.println("FINISHED");
     Files.delete(tempFileFullPath);

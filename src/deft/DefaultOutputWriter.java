@@ -12,22 +12,21 @@ import inter.RecordWriter;
 
 public class DefaultOutputWriter <K extends Comparable<K> & Serializable, 
                                   V extends Serializable> implements RecordWriter<K, V> {
-  
-  private BufferedWriter writer;
-  
-  private char GROUP_SEPARATOR = 0x1d;
-  private char RECORD_SEPARATOR = 0x1e;
+    
   private char UNIT_SEPARATOR = 0x1f;
-  
+  private char RECORD_SEPARATOR = 0x1e;
+
   private ArrayList<Record<K, V>>[] parts;
+  private BufferedWriter[] wrts;
      
   @SuppressWarnings("unchecked")
   @Override
   public void init(File out, int numPartitions) throws IOException {
-    writer = new BufferedWriter(new FileWriter(out));
     parts = new ArrayList[numPartitions];
-    for (int i = 0; i < parts.length; i++) {
+    wrts = new BufferedWriter[numPartitions];
+    for (int i = 0; i < numPartitions; i++) {
       parts[i] = new ArrayList<Record<K, V>>();
+      wrts[i] = new BufferedWriter(new FileWriter(out.getName() + "_" + i));
     }
   }
   
@@ -43,15 +42,15 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   
   @Override
   public void close() throws IOException {
-    for (var p : parts) {
-      Collections.sort(p);
-      for (var rec : p) {
-        writer.write(rec.getKey().toString() + UNIT_SEPARATOR
+    for (int i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      Collections.sort(part);
+      for (var rec : part) {
+        wrts[i].write(rec.getKey().toString() + UNIT_SEPARATOR
             + rec.getValue().toString() + RECORD_SEPARATOR);
       }
-      writer.write(GROUP_SEPARATOR);
+      wrts[i].close();
     }
-    writer.close();
   }
   
 }
