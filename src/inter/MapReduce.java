@@ -13,7 +13,10 @@ public interface MapReduce <K1 extends Comparable<K1> & Serializable, V1 extends
   public final HashMap<String, String> props = new HashMap<>();
   
   public default int setWorkersNum(int num) {
-    return Integer.parseInt(props.put("workersNum", Integer.toString(num)));
+    var ret = props.put("workersNum", Integer.toString(num));
+    if (ret == null)
+      return 0;
+    return Integer.parseInt(ret);
   }
   
   public default int getWorkersNum() {

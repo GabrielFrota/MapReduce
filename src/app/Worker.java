@@ -82,7 +82,7 @@ public class Worker implements Callable<Integer> {
     @Override
     public void setMasterIp(String ip) throws RemoteException {
       masterIp = ip;
-      System.setProperty("java.rmi.server.codebase", "http://" + ip + ":8080/");
+      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4" + ":8080/");
     }
     
     @SuppressWarnings("rawtypes")
