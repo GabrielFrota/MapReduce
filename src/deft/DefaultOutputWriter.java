@@ -37,13 +37,7 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   }
 
   @Override
-  public void write(K key, V value) throws IOException {
-//  cnt = key.toString().getBytes().length + value.toString().getBytes().length
-//  Function<Object, Long> func = Instrumentation::getObjectSize;
-//  if (cnt >= CNT_MAX)
-//    //spillBuffer();
-// writer.write(key.toString() + UNIT_SEPARATOR + value.toString() + RECORD_SEPARATOR);    
-    
+  public void write(K key, V value) throws IOException {    
     parts[getPartition(key, value)].add(new Record<K, V>(key, value));   
   }
   
@@ -52,10 +46,10 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     for (var p : parts) {
       Collections.sort(p);
       for (var rec : p) {
-        writer.write(rec.getKey().toString() + "\t"
-            + rec.getValue().toString() + "\n");
+        writer.write(rec.getKey().toString() + UNIT_SEPARATOR
+            + rec.getValue().toString() + RECORD_SEPARATOR);
       }
-      writer.write("\n\n\n\n");
+      writer.write(GROUP_SEPARATOR);
     }
     writer.close();
   }

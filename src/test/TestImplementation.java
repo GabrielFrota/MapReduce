@@ -7,7 +7,7 @@ import inter.InputFormat;
 import inter.MapReduce;
 import inter.RecordWriter;
 
-public class TestImplementation extends MapReduce<Long, String, Long, String> {
+public class TestImplementation extends MapReduce<Long, String, String, Integer> {
 
   private static final long serialVersionUID = 1L;
 
@@ -17,9 +17,11 @@ public class TestImplementation extends MapReduce<Long, String, Long, String> {
   }
 
   @Override
-  public void map(Long k, String v, RecordWriter<Long, String> w) throws IOException {
-    var arr = v.split(",");
-    w.write(k, arr[arr.length - 1]);
+  public void map(Long k, String v, RecordWriter<String, Integer> w) throws IOException {
+    var strs = v.split(",");
+    for (var s : strs) {
+      w.write(s, 1);
+    }
   }
   
 }
