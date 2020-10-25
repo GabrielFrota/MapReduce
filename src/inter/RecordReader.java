@@ -1,4 +1,4 @@
-package params;
+package inter;
 
 import java.io.Closeable;
 import java.io.File;

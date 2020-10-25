@@ -1,4 +1,4 @@
-package params;
+package deft;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,10 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class LineRecordReader implements RecordReader<String, String> {
+import inter.RecordReader;
+
+public class LineRecordReader implements RecordReader<Long, String> {
   
   private BufferedReader reader;
-  private String currentKey;
+  private Long currentKey;
   private String currentValue;
   private long cnt;
   
@@ -19,7 +21,7 @@ public class LineRecordReader implements RecordReader<String, String> {
   }
 
   @Override
-  public String getCurrentKey() throws IOException {
+  public Long getCurrentKey() throws IOException {
     return currentKey;
   }
 
@@ -30,9 +32,10 @@ public class LineRecordReader implements RecordReader<String, String> {
 
   @Override
   public boolean readOneAndAdvance() throws IOException {
-    currentKey = Long.toString(cnt);
+    currentKey = cnt;
     currentValue = reader.readLine();
-    if (currentValue == null) return false;
+    if (currentValue == null) 
+      return false;
     cnt += currentValue.getBytes().length;
     return true;
   }

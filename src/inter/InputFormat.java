@@ -1,4 +1,4 @@
-package params;
+package inter;
 
 import java.io.File;
 import java.io.IOException;

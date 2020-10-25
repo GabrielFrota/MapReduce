@@ -27,11 +27,11 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
+import inter.MapReduce;
 import lib.ClassFileServer;
 import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
-import params.MapReduce;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
@@ -95,6 +95,7 @@ public class Master implements Callable<Integer> {
     return (WorkerRemote) reg.lookup(WorkerRemote.NAME);
   }
   
+  @SuppressWarnings("rawtypes")
   @Override
   public Integer call() throws Exception {
     if (!input.exists() || !input.canRead()) {
@@ -145,6 +146,7 @@ public class Master implements Callable<Integer> {
         .replace("/", "."), bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
+    @SuppressWarnings("unused")
     var fileServer = new ClassFileServer(8080, "./bin");  
     try (var sock = new Socket("www.google.com", 80)) {
       var addr = sock.getLocalAddress().getHostAddress();
@@ -159,6 +161,7 @@ public class Master implements Callable<Integer> {
         + ":1100 exporting MasterRemote interface.");
     
     var lines = Files.readAllLines(workersFile.toPath());
+    mapRed.setWorkersNum(lines.size());
     for (var ip : lines) {
       var worker = getWorkerRemote(ip);
       if (!worker.getOK().equals("OK"))
@@ -202,8 +205,9 @@ public class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }        
-    System.out.println("FINISHED");
     
+    System.out.println("FINISHED");
+    Files.delete(tempFileFullPath);
     return 0;
   }
 

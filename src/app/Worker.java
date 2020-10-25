@@ -12,10 +12,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import inter.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
-import params.DefaultRecordWriter;
-import params.MapReduce;
 
 @Command(name = "core/Worker", mixinStandardHelpOptions = true, 
   description = "Worker proccess for distributed MapReduce jobs in a cluster.")
@@ -83,6 +82,7 @@ public class Worker implements Callable<Integer> {
     @Override
     public void setMasterIp(String ip) throws RemoteException {
       masterIp = ip;
+      System.setProperty("java.rmi.server.codebase", "http://" + ip + ":8080/");
     }
     
     @SuppressWarnings("rawtypes")
@@ -101,8 +101,8 @@ public class Worker implements Callable<Integer> {
       var mapOut = new File(f.getName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = mapRed.getMapRecordWriter();
-      recordWriter.init(mapOut);
+      var recordWriter = mapRed.getMapWriter();
+      recordWriter.init(mapOut, mapRed.getWorkersNum());
       while (recordReader.readOneAndAdvance()) 
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
@@ -117,7 +117,6 @@ public class Worker implements Callable<Integer> {
     System.setSecurityManager(new SecurityManager());
     try (var sock = new Socket("www.google.com", 80)) {
       System.setProperty("java.rmi.server.hostname", sock.getLocalAddress().getHostAddress());
-      System.setProperty("java.rmi.server.codebase", "http://192.168.15.4:8080/");
     }
     var impl = new WorkerRemoteImpl();
     var reg = LocateRegistry.createRegistry(1099);

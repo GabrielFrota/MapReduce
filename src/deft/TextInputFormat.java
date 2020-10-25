@@ -1,4 +1,4 @@
-package params;
+package deft;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,7 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class TextInputFormat implements InputFormat<String, String> {
+import inter.InputFormat;
+import inter.RecordReader;
+
+public class TextInputFormat implements InputFormat<Long, String> {
   
   @Override
   public File[] getSplits(File in, int numSplits) throws IOException {
@@ -33,7 +36,7 @@ public class TextInputFormat implements InputFormat<String, String> {
   }
   
   @Override
-  public RecordReader<String, String> getRecordReader(File in) throws IOException {
+  public RecordReader<Long, String> getRecordReader(File in) throws IOException {
     var rec = new LineRecordReader();
     rec.init(in);
     return rec;
