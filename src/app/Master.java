@@ -174,11 +174,6 @@ public class Master implements Callable<Integer> {
       worker.sendImplClass();
     }
     
-    for (i = 0; i < mapRed.getWorkersNum(); i++) {
-      System.out.println(mapRed.getWorkerIpFromId(i));
-    }
-    System.exit(0);
-    
     var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, mapRed.getWorkersNum());
     var inName = input.getName();
@@ -203,11 +198,11 @@ public class Master implements Callable<Integer> {
     
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<String>>();
-    for (var w : workers) {
+    for (var ip : workers) {
       var task = pool.submit(() -> {
-        var worker = getWorkerRemote(w);
+        var worker = getWorkerRemote(ip);
         worker.doMap(inName);
-        return w;
+        return ip;
       });
       tasks.add(task);
     }
@@ -215,7 +210,8 @@ public class Master implements Callable<Integer> {
       t.get();
     }
     
-    
+    var worker = getWorkerRemote(workers.get(0));
+    worker.createInWorker(workers.get(1), "testando.txt");
     
     // FILES TO BREAK IN WORKERS
     

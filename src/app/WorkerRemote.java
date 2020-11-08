@@ -1,6 +1,7 @@
 package app;
 
 import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -29,6 +30,8 @@ public interface WorkerRemote extends Remote {
   public void sendImplClass() throws Exception;
   
   public void doMap(String fileName) throws RemoteException, IOException;
+  
+  public boolean createInWorker(String ip, String filename) throws RemoteException, IOException, NotBoundException;
   
   public final static String NAME = "WorkerRemote";
 

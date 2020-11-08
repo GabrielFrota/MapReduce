@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -103,6 +104,13 @@ public class Worker implements Callable<Integer> {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
       recordWriter.close();
+    }
+    
+    @Override
+    public boolean createInWorker(String ip, String filename) throws RemoteException, IOException, NotBoundException {
+      var reg = LocateRegistry.getRegistry(ip);
+      var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+      return worker.createNewFile(filename);
     }
 
   }
