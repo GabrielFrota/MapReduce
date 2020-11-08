@@ -13,7 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-import inter.MapReduce;
+import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
 

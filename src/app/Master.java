@@ -11,10 +11,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
@@ -28,7 +26,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
-import inter.MapReduce;
+import interf.MapReduce;
 import lib.ClassFileServer;
 import lib.CommandLine;
 import lib.CommandLine.Command;
@@ -80,9 +78,7 @@ public class Master implements Callable<Integer> {
   
   @Option(names = {"-ov", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
-  
-  private final List<String> workers = new ArrayList<String>();
-  
+    
   private final static CommandLine comm = new CommandLine(new Master());
   
   private void printErr(String msg) {
@@ -161,21 +157,32 @@ public class Master implements Callable<Integer> {
         + System.getProperty("java.rmi.server.hostname") 
         + ":1100 exporting MasterRemote interface.");
     
-    var lines = Files.readAllLines(workersFile.toPath());
-    mapRed.setWorkersNum(lines.size());
-    for (var ip : lines) {
+    var workers = Files.readAllLines(workersFile.toPath());
+    int i = 0;
+    for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       if (!worker.getOK().equals("OK"))
         throw new RuntimeException("Host " + ip + " did not answered properly.");
+      mapRed.setIdWorkerIp(i, ip);
+      i++;
+    }
+    mapRed.setWorkersNum(workers.size());
+    
+    for (var ip : workers) {
+      var worker = getWorkerRemote(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
       worker.sendImplClass();
-      workers.add(ip);
-    }   
+    }
+    
+    for (i = 0; i < mapRed.getWorkersNum(); i++) {
+      System.out.println(mapRed.getWorkerIpFromId(i));
+    }
+    System.exit(0);
     
     var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, mapRed.getWorkersNum());
     var inName = input.getName();
-    int i = 0;
+    i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
       boolean exists = worker.exists(inName);
@@ -207,6 +214,8 @@ public class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
+    
+    
     
     // FILES TO BREAK IN WORKERS
     

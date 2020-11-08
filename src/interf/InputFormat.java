@@ -1,4 +1,4 @@
-package inter;
+package interf;
 
 import java.io.File;
 import java.io.IOException;

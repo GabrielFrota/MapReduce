@@ -1,4 +1,4 @@
-package inter;
+package interf;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -22,6 +22,14 @@ public abstract class MapReduce <K1 extends Comparable<K1> & Serializable, V1 ex
   public int getWorkersNum() {
     var ret = conf.get("workersNum");
     return ret != null ? Integer.parseInt(ret) : -1;
+  }
+  
+  public String setIdWorkerIp(int id, String ip) {
+    return conf.put(Integer.toString(id), ip);
+  }
+  
+  public String getWorkerIpFromId(int id) {
+    return conf.get(Integer.toString(id));
   }
     
   public RecordWriter<K2, V2> getMapWriter() {

@@ -8,13 +8,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import inter.RecordWriter;
+import interf.RecordWriter;
 
 public class DefaultOutputWriter <K extends Comparable<K> & Serializable, 
                                   V extends Serializable> implements RecordWriter<K, V> {
     
-  private char UNIT_SEPARATOR = 0x1f;
-  private char RECORD_SEPARATOR = 0x1e;
+//  private char UNIT_SEPARATOR = 0x1f;
+//  private char RECORD_SEPARATOR = 0x1e;
 
   private ArrayList<Record<K, V>>[] parts;
   private BufferedWriter[] wrts;

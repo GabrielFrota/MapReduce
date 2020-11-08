@@ -3,7 +3,7 @@ package app;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import inter.MapReduce;
+import interf.MapReduce;
 
 public interface MasterRemote extends Remote {
   

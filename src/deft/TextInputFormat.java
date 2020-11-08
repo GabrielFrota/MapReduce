@@ -7,8 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import inter.InputFormat;
-import inter.RecordReader;
+import interf.InputFormat;
+import interf.RecordReader;
 
 public class TextInputFormat implements InputFormat<Long, String> {
   

@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import inter.RecordReader;
+import interf.RecordReader;
 
 public class LineRecordReader implements RecordReader<Long, String> {
   
