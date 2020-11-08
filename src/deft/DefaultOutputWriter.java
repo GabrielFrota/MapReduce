@@ -26,7 +26,7 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     wrts = new BufferedWriter[numPartitions];
     for (int i = 0; i < numPartitions; i++) {
       parts[i] = new ArrayList<Record<K, V>>();
-      wrts[i] = new BufferedWriter(new FileWriter(out.getName() + "_" + i));
+      wrts[i] = new BufferedWriter(new FileWriter(out.getName() + "." + i));
     }
   }
   
