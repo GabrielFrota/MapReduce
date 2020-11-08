@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
@@ -73,15 +74,15 @@ public class Master implements Callable<Integer> {
       paramLabel = "FILE", required = true)
   private File workersFile;
   
-  private final List<String> workers = new ArrayList<String>();
+  @Option(names = {"-mp", "--mapreduce"}, description = "MapReduce implementation class file path.", 
+      paramLabel = "FILE", required = true)
+  private File mapReduceFile;
   
   @Option(names = {"-ov", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
   
-  @Option(names = {"-mp", "--mapreduce"}, description = "MapReduce implementation class file path.", 
-      paramLabel = "FILE", required = true)
-  private File mapReduceFile;
-
+  private final List<String> workers = new ArrayList<String>();
+  
   private final static CommandLine comm = new CommandLine(new Master());
   
   private void printErr(String msg) {
@@ -91,32 +92,32 @@ public class Master implements Callable<Integer> {
   
   private WorkerRemote getWorkerRemote(String ip) 
     throws RemoteException, AccessException, NotBoundException {
-    var reg = LocateRegistry.getRegistry(ip);
-    return (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+      var reg = LocateRegistry.getRegistry(ip);
+      return (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+  }
+  
+  private boolean checkExistsCanRead(File f, String param) {
+    if (!f.exists() || !f.canRead()) {
+      printErr("Invalid " + param + " parameter value. Correct file "
+          + "path to an existing file with read permission is required.");
+      return false;
+    }
+    return true;
   }
   
   @SuppressWarnings("rawtypes")
   @Override
   public Integer call() throws Exception {
-    if (!input.exists() || !input.canRead()) {
-      printErr("Invalid --input parameter value. Correct file path to an existing "
-          + "file with read permission is required.");
-      return -1;
-    }
-    if (!workersFile.exists() || !workersFile.canRead()) {
-      printErr("Invalid --workers parameter value. Correct file path to an existing "
-          + "file with read permission is required.");
-      return -1;
+    var params = Map.of(input, "--input", workersFile, "--workers",
+        mapReduceFile, "--mp");
+    for (var p : params.entrySet()) {
+      if (!checkExistsCanRead(p.getKey(), p.getValue()))
+        return -1;
     }
     if (output.exists()) 
       output.delete();
     if (!output.createNewFile()) {
       printErr("Output file creation failed.");
-      return -1;
-    }
-    if (!mapReduceFile.exists() || !mapReduceFile.canRead()) {
-      printErr("Invalid --mapreduce parameter value. Correct file path to an existing "
-          + "file with read permission is required.");
       return -1;
     }
     
@@ -166,29 +167,30 @@ public class Master implements Callable<Integer> {
       var worker = getWorkerRemote(ip);
       if (!worker.getOK().equals("OK"))
         throw new RuntimeException("Host " + ip + " did not answered properly.");
-      workers.add(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
       worker.sendImplClass();
+      workers.add(ip);
     }   
     
     var text = mapRed.getInputFormat();
-    var splits = text.getSplits(input, workers.size());
+    var splits = text.getSplits(input, mapRed.getWorkersNum());
+    var inPath = input.getPath();
     int i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
-      boolean exists = worker.exists(input);
+      boolean exists = worker.exists(inPath);
       if (!exists || overwrite) {
-        if (exists) worker.delete(input);
-        worker.createNewFile(input);
+        if (exists) worker.delete(inPath);
+        worker.createNewFile(inPath);
         System.out.println("Sending " + s + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[2048];
-        worker.initWrite(input);
+        worker.initOutputStream(inPath);
         for (int len = inStream.read(buf); len != -1; len = inStream.read(buf)) {
           if (len == buf.length) worker.write(buf);
           else worker.write(buf, len);
         }
-        worker.doneWrite();
+        worker.closeOutputStream();
       }
     }
     
@@ -197,7 +199,7 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(w);
-        worker.doMap(input);
+        worker.doMap(inPath);
         return w;
       });
       tasks.add(task);
@@ -206,6 +208,7 @@ public class Master implements Callable<Integer> {
       t.get();
     }
     
+    // FILES TO BREAK IN WORKERS
     
     System.out.println("FINISHED");
     Files.delete(tempFileFullPath);

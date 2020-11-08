@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -39,29 +40,25 @@ public class Worker implements Callable<Integer> {
     }
 
     @Override
-    public boolean createNewFile(File f) throws RemoteException, IOException {
-      var file = new File(f.getName());
-      return file.createNewFile();
+    public boolean createNewFile(String fileName) throws RemoteException, IOException {
+      return new File(fileName).createNewFile();
     }
     
     @Override
-    public boolean delete(File f) throws RemoteException {
-      var file = new File(f.getName());
-      return file.delete();
+    public boolean delete(String fileName) throws RemoteException {
+      return new File(fileName).delete();
     }
     
     @Override
-    public boolean exists(File f) throws RemoteException {
-      var file = new File(f.getName());
-      return file.exists();
+    public boolean exists(String fileName) throws RemoteException {
+      return new File(fileName).exists();
     }
     
     private OutputStream out;
     
     @Override
-    public void initWrite(File f) throws RemoteException, IOException {
-      var file = new File(f.getName());
-      out = Files.newOutputStream(file.toPath(), StandardOpenOption.APPEND);
+    public void initOutputStream(String fileName) throws RemoteException, IOException {
+      out = Files.newOutputStream(Paths.get(fileName), StandardOpenOption.APPEND);
     }
     
     @Override
@@ -74,7 +71,7 @@ public class Worker implements Callable<Integer> {
     }
     
     @Override
-    public void doneWrite() throws RemoteException, IOException {
+    public void closeOutputStream() throws RemoteException, IOException {
       out.close();
     }
     
@@ -95,9 +92,9 @@ public class Worker implements Callable<Integer> {
     
     @Override
     @SuppressWarnings("unchecked")
-    public void doMap(File f) throws RemoteException, IOException {
-      var in = new File(f.getName());
-      var mapOut = new File(f.getName() + ".mapout");
+    public void doMap(String fileName) throws RemoteException, IOException {
+      var in = new File(fileName);
+      var mapOut = new File(fileName + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var recordWriter = mapRed.getMapWriter();
