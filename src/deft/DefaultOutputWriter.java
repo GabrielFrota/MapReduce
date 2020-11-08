@@ -44,12 +44,13 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   public void close() throws IOException {
     for (int i = 0; i < parts.length; i++) {
       var part = parts[i];
+      var wrt = wrts[i];
       Collections.sort(part);
       for (var rec : part) {
-        wrts[i].write(rec.getKey().toString() + UNIT_SEPARATOR
+        wrt.write(rec.getKey().toString() + UNIT_SEPARATOR
             + rec.getValue().toString() + RECORD_SEPARATOR);
       }
-      wrts[i].close();
+      wrt.close();
     }
   }
   
