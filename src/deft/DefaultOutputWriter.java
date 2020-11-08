@@ -47,8 +47,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       var wrt = wrts[i];
       Collections.sort(part);
       for (var rec : part) {
-        wrt.write(rec.getKey().toString() + UNIT_SEPARATOR
-            + rec.getValue().toString() + RECORD_SEPARATOR);
+        wrt.write(rec.getKey().toString() + "\t"
+            + rec.getValue().toString() + "\n");
       }
       wrt.close();
     }

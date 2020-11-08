@@ -174,18 +174,18 @@ public class Master implements Callable<Integer> {
     
     var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, mapRed.getWorkersNum());
-    var inPath = input.getPath();
+    var inName = input.getName();
     int i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
-      boolean exists = worker.exists(inPath);
+      boolean exists = worker.exists(inName);
       if (!exists || overwrite) {
-        if (exists) worker.delete(inPath);
-        worker.createNewFile(inPath);
+        if (exists) worker.delete(inName);
+        worker.createNewFile(inName);
         System.out.println("Sending " + s + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[2048];
-        worker.initOutputStream(inPath);
+        worker.initOutputStream(inName);
         for (int len = inStream.read(buf); len != -1; len = inStream.read(buf)) {
           if (len == buf.length) worker.write(buf);
           else worker.write(buf, len);
@@ -199,7 +199,7 @@ public class Master implements Callable<Integer> {
     for (var w : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(w);
-        worker.doMap(inPath);
+        worker.doMap(inName);
         return w;
       });
       tasks.add(task);
