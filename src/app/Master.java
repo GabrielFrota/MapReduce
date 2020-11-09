@@ -207,7 +207,7 @@ public class Master implements Callable<Integer> {
     
     for (var ip : mapRed.workers) {
       var worker = getWorkerRemote((String)ip);
-      worker.gatherPartition(mapRed.workers.indexOf(worker));
+      worker.gatherPartition(mapRed.workers.indexOf(ip));
     }
     
     // FILES TO BREAK IN WORKERS

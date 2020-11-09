@@ -119,9 +119,10 @@ public class Worker implements Callable<Integer> {
     @Override
     public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
-      var partChunks = new ArrayDeque<File>();
+      var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
+      var parts = new ArrayDeque<File>();
       for (int i = 0; i < mapRed.workers.size() - 1; i++) {
-        partChunks.add(new File("partition." + myIndex + "." + i));
+        parts.add(new File("partition." + myIndex + "." + i));
       }
       
       for (int i = 0; i < mapRed.workers.size(); i++) {
@@ -129,8 +130,8 @@ public class Worker implements Callable<Integer> {
         if (!ip.equals(myIp)) {
           var reg = LocateRegistry.getRegistry((String)ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-          var part = Files.newOutputStream(partChunks.pop().toPath());
-          worker.initInputStream(mapRed.getInputName() + ".mapout." + myIndex);
+          var part = Files.newOutputStream(parts.pop().toPath());
+          worker.initInputStream(myChunkName);
           for (byte[] b = worker.read(WorkerRemote.CHUNK_LENGTH); 
                b.length != 0;
                b = worker.read(WorkerRemote.CHUNK_LENGTH)) {
@@ -138,6 +139,12 @@ public class Worker implements Callable<Integer> {
           }
           worker.closeInputStream();
         }
+      }
+      parts.add(new File(myChunkName));
+      try {
+        mapRed.getMapWriter().merge(parts, new File("chunks_merged"));
+      } catch (Exception ex) {
+        throw new RemoteException(ex.getMessage());
       }
     }
 

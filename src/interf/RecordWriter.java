@@ -14,8 +14,10 @@ public interface RecordWriter<K extends Comparable<K> & Serializable,
   
   public int getPartition(K key, V value);
   
+  public void merge(Iterable<File> files, File out) throws Exception;
+  
   public class Record<K extends Comparable<K> & Serializable, 
-                      V extends Serializable> implements Comparable<Record<K, V>> {
+                      V extends Serializable> implements Comparable<Record<K, V>>, Serializable {   
     private K key;
     private V value;
     public Record(K key, V value) {
@@ -32,6 +34,7 @@ public interface RecordWriter<K extends Comparable<K> & Serializable,
     public int compareTo(Record<K, V> o) {
       return key.compareTo(o.getKey());
     }
+    private static final long serialVersionUID = 1L;
   }
   
 }

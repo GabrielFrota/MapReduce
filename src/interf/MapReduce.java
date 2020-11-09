@@ -28,7 +28,7 @@ public abstract class MapReduce <K1 extends Comparable<K1> & Serializable, V1 ex
   }
   
   public final List<String> workers = new ArrayList<String>();
-  
+    
   public RecordWriter<K2, V2> getMapWriter() {
     return new DefaultOutputWriter<K2, V2>();
   }
