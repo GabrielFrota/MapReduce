@@ -79,11 +79,11 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       var rec = map.get(in);
       outStr.write(rec.getKey().toString() + "\t"
           + rec.getValue().toString() + "\n");
-      rec = (Record<K, V>) in.readObject();
-      if (rec != null) {
+      try {
+        rec = (Record<K, V>) in.readObject();
         map.put(in, rec);
         queue.add(in);
-      } else {
+      } catch (IOException ex) {
         map.remove(in);
         in.close();
       }
