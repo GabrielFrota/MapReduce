@@ -7,11 +7,21 @@ import java.rmi.RemoteException;
 
 public interface WorkerRemote extends Remote {
   
+  // for setting up the system
+  
+  public final static String NAME = "WorkerRemote";
+  
+  public final static int CHUNK_LENGTH = 4096;
+  
   public String getOK() throws RemoteException;
   
   public String getIp() throws RemoteException;
   
   public void setMasterIp(String ip) throws RemoteException;
+  
+  public void downloadImpl() throws RemoteException, NotBoundException;
+  
+  // file operations to be called remotely
   
   public boolean createNewFile(String fileName) throws RemoteException, IOException;
   
@@ -19,20 +29,26 @@ public interface WorkerRemote extends Remote {
   
   public boolean exists(String fileName) throws RemoteException;
   
+  // setting up a stream and writing chunks to a file remotely
+  
   public void initOutputStream(String fileName) throws RemoteException, IOException;
-  
-  public void write(byte[] chunk) throws RemoteException, IOException;
-  
+    
   public void write(byte[] b, int len) throws RemoteException, IOException;
   
   public void closeOutputStream() throws RemoteException, IOException;
   
-  public void sendImplClass() throws Exception;
+  // setting up a stream and reading chunks from a file remotely
   
-  public void doMap(String fileName) throws RemoteException, IOException;
+  public void initInputStream(String fileName) throws RemoteException, IOException;
+    
+  public byte[] read(int len) throws RemoteException, IOException;
   
-  public boolean createInWorker(String ip, String filename) throws RemoteException, IOException, NotBoundException;
+  public void closeInputStream() throws RemoteException, IOException;
   
-  public final static String NAME = "WorkerRemote";
-
+  // MapReduce steps
+  
+  public void doMap() throws RemoteException, IOException;
+  
+  public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException;
+  
 }

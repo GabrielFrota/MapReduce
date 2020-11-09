@@ -101,7 +101,7 @@ public class Master implements Callable<Integer> {
     return true;
   }
   
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Integer call() throws Exception {
     var params = Map.of(input, "--input", workersFile, "--workers",
@@ -158,39 +158,34 @@ public class Master implements Callable<Integer> {
         + ":1100 exporting MasterRemote interface.");
     
     var workers = Files.readAllLines(workersFile.toPath());
-    int i = 0;
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       if (!worker.getOK().equals("OK"))
         throw new RuntimeException("Host " + ip + " did not answered properly.");
-      mapRed.setIdWorkerIp(i, ip);
-      i++;
+      mapRed.workers.add(ip);
     }
-    mapRed.setWorkersNum(workers.size());
-    
+    mapRed.setInputName(input.getName());
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
-      worker.sendImplClass();
+      worker.downloadImpl();
     }
     
     var text = mapRed.getInputFormat();
-    var splits = text.getSplits(input, mapRed.getWorkersNum());
-    var inName = input.getName();
-    i = 0;
+    var splits = text.getSplits(input, mapRed.workers.size());
+    int i = 0;
     for (var s : splits) {
       var worker = getWorkerRemote(workers.get(i++));
-      boolean exists = worker.exists(inName);
+      boolean exists = worker.exists(mapRed.getInputName());
       if (!exists || overwrite) {
-        if (exists) worker.delete(inName);
-        worker.createNewFile(inName);
+        if (exists) worker.delete(mapRed.getInputName());
+        worker.createNewFile(mapRed.getInputName());
         System.out.println("Sending " + s + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
-        byte[] buf = new byte[2048];
-        worker.initOutputStream(inName);
+        byte[] buf = new byte[WorkerRemote.CHUNK_LENGTH];
+        worker.initOutputStream(mapRed.getInputName());
         for (int len = inStream.read(buf); len != -1; len = inStream.read(buf)) {
-          if (len == buf.length) worker.write(buf);
-          else worker.write(buf, len);
+          worker.write(buf, len);
         }
         worker.closeOutputStream();
       }
@@ -201,7 +196,7 @@ public class Master implements Callable<Integer> {
     for (var ip : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(ip);
-        worker.doMap(inName);
+        worker.doMap();
         return ip;
       });
       tasks.add(task);
@@ -210,8 +205,10 @@ public class Master implements Callable<Integer> {
       t.get();
     }
     
-    var worker = getWorkerRemote(workers.get(0));
-    worker.createInWorker(workers.get(1), "testando.txt");
+    for (var ip : mapRed.workers) {
+      var worker = getWorkerRemote((String)ip);
+      worker.gatherPartition(mapRed.workers.indexOf(worker));
+    }
     
     // FILES TO BREAK IN WORKERS
     

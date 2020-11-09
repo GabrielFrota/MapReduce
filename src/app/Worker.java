@@ -2,11 +2,11 @@ package app;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -39,6 +39,21 @@ public class Worker implements Callable<Integer> {
     public String getIp() throws RemoteException {
       return System.getProperty("java.rmi.server.hostname");
     }
+    
+    private String masterIp;
+    @Override
+    public void setMasterIp(String ip) throws RemoteException {
+      masterIp = ip;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    private MapReduce mapRed;
+    @Override
+    public void downloadImpl() throws RemoteException, NotBoundException {
+      var reg = LocateRegistry.getRegistry(masterIp, 1100);
+      var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
+      mapRed = master.getMapReduceImpl();
+    }
 
     @Override
     public boolean createNewFile(String fileName) throws RemoteException, IOException {
@@ -59,12 +74,7 @@ public class Worker implements Callable<Integer> {
     
     @Override
     public void initOutputStream(String fileName) throws RemoteException, IOException {
-      out = Files.newOutputStream(Paths.get(fileName), StandardOpenOption.APPEND);
-    }
-    
-    @Override
-    public void write(byte[] chunk) throws RemoteException, IOException {  
-      out.write(chunk);
+      out = Files.newOutputStream(Paths.get(fileName));
     }
     
     public void write(byte[] b, int len) throws RemoteException, IOException {
@@ -76,30 +86,29 @@ public class Worker implements Callable<Integer> {
       out.close();
     }
     
-    private String masterIp;
-    @Override
-    public void setMasterIp(String ip) throws RemoteException {
-      masterIp = ip;
+    private InputStream in;
+   
+    public void initInputStream(String fileName) throws RemoteException, IOException {
+      in = Files.newInputStream(Paths.get(fileName));
+    }
+        
+    public byte[] read(int len) throws RemoteException, IOException {
+      return in.readNBytes(len);
     }
     
-    @SuppressWarnings("rawtypes")
-    private MapReduce mapRed;
-    @Override
-    public void sendImplClass() throws Exception {
-      var reg = LocateRegistry.getRegistry(masterIp, 1100);
-      var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
-      mapRed = master.getMapReduceImpl();
-    }
-    
+    public void closeInputStream() throws RemoteException, IOException {
+      in.close();
+    };
+        
     @Override
     @SuppressWarnings("unchecked")
-    public void doMap(String fileName) throws RemoteException, IOException {
-      var in = new File(fileName);
-      var mapOut = new File(fileName + ".mapout");
+    public void doMap() throws RemoteException, IOException {
+      var in = new File(mapRed.getInputName());
+      var mapOut = new File(mapRed.getInputName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var recordWriter = mapRed.getMapWriter();
-      recordWriter.init(mapOut, mapRed.getWorkersNum());
+      recordWriter.init(mapOut, mapRed.workers.size());
       while (recordReader.readOneAndAdvance()) 
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       recordReader.close();
@@ -107,10 +116,28 @@ public class Worker implements Callable<Integer> {
     }
     
     @Override
-    public boolean createInWorker(String ip, String filename) throws RemoteException, IOException, NotBoundException {
-      var reg = LocateRegistry.getRegistry(ip);
-      var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-      return worker.createNewFile(filename);
+    public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
+      var myIp = System.getProperty("java.rmi.server.hostname");
+      var partChunks = new File[mapRed.workers.size() - 1];
+      for (int i = 0; i < partChunks.length; i++) {
+        partChunks[i] = new File("partition." + myIndex + "." + i);
+      }
+      
+      for (int i = 0; i < mapRed.workers.size(); i++) {
+        var ip = (String) mapRed.workers.get(i);
+        if (!ip.equals(myIp)) {
+          var reg = LocateRegistry.getRegistry((String)ip);
+          var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
+          var part = Files.newOutputStream(partChunks[i].toPath());
+          worker.initInputStream(mapRed.getInputName() + ".mapout." + myIndex);
+          for (byte[] b = worker.read(WorkerRemote.CHUNK_LENGTH); 
+               b.length != 0;
+               b = worker.read(WorkerRemote.CHUNK_LENGTH)) {
+            part.write(b);
+          }
+          worker.closeInputStream();
+        }
+      }
     }
 
   }

@@ -2,7 +2,9 @@ package interf;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import deft.DefaultOutputWriter;
 
@@ -11,27 +13,22 @@ public abstract class MapReduce <K1 extends Comparable<K1> & Serializable, V1 ex
   implements Serializable {
   
   private static final long serialVersionUID = 1L;
-  
-  protected final HashMap<String, String> conf = new HashMap<>();
-  
-  public int setWorkersNum(int num) {
-    var ret = conf.put("workersNum", Integer.toString(num));
-    return ret != null ? Integer.parseInt(ret) : -1;
-  }
-  
-  public int getWorkersNum() {
-    var ret = conf.get("workersNum");
-    return ret != null ? Integer.parseInt(ret) : -1;
-  }
-  
-  public String setIdWorkerIp(int id, String ip) {
-    return conf.put(Integer.toString(id), ip);
-  }
-  
-  public String getWorkerIpFromId(int id) {
-    return conf.get(Integer.toString(id));
-  }
     
+  private String inputName;
+  
+  public void setInputName(String n) {
+    if (inputName != null) {
+      throw new IllegalStateException("setInputName was already called");
+    }
+    inputName = Objects.requireNonNull(n);
+  }
+  
+  public String getInputName() {
+    return inputName;
+  }
+  
+  public final List<String> workers = new ArrayList<String>();
+  
   public RecordWriter<K2, V2> getMapWriter() {
     return new DefaultOutputWriter<K2, V2>();
   }
