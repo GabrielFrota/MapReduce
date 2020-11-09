@@ -144,6 +144,7 @@ public class Worker implements Callable<Integer> {
       try {
         mapRed.getMapWriter().merge(parts, new File("chunks_merged"));
       } catch (Exception ex) {
+        ex.printStackTrace();
         throw new RemoteException(ex.getMessage());
       }
     }
