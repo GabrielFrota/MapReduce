@@ -60,7 +60,6 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   @SuppressWarnings("unchecked")
   @Override
   public void merge(Iterable<File> files, File out) throws Exception {
-    var outStr = new BufferedWriter(new FileWriter(out));
     var map = new HashMap<ObjectInputStream, Record<K, V>>();
     Comparator<ObjectInputStream> comp = (o1, o2) -> {
       return map.get(o1).compareTo(map.get(o2));
@@ -73,6 +72,7 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       queue.add(in);
     }   
     
+    var outStr = new BufferedWriter(new FileWriter(out));
     while (true) {
       var in = queue.poll();
       if (in == null) break;

@@ -209,9 +209,7 @@ public class Master implements Callable<Integer> {
       var worker = getWorkerRemote((String)ip);
       worker.gatherPartition(mapRed.workers.indexOf(ip));
     }
-    
-    // FILES TO BREAK IN WORKERS
-    
+        
     System.out.println("FINISHED");
     Files.delete(tempFileFullPath);
     return 0;
