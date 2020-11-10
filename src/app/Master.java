@@ -148,6 +148,7 @@ class Master implements Callable<Integer> {
     var clazz = new MasterClassLoader().loadClass(clazzName, bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
+    var out = comm.getOut();
     @SuppressWarnings("unused")
     var fileServer = new ClassFileServer(8080, "./bin");  
     try (var sock = new Socket("www.google.com", 80)) {
@@ -158,7 +159,7 @@ class Master implements Callable<Integer> {
     var impl = new MasterRemoteImpl();
     var reg = LocateRegistry.createRegistry(1100);
     reg.bind(MasterRemote.NAME, impl);
-    System.out.println("RMI Registry is binded to address " 
+    out.println("RMI Registry is binded to address " 
         + System.getProperty("java.rmi.server.hostname") 
         + ":1100 exporting MasterRemote interface.");
     
@@ -185,7 +186,7 @@ class Master implements Callable<Integer> {
       if (!exists || overwrite) {
         if (exists) worker.delete(mapRed.getInputName());
         worker.createNewFile(mapRed.getInputName());
-        System.out.println("Sending " + s + " to worker " + worker.getIp());
+        out.println("Sending " + s + " to worker " + worker.getIp());
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[WorkerRemote.CHUNK_LENGTH];
         worker.initOutputStream(mapRed.getInputName());
@@ -199,22 +200,31 @@ class Master implements Callable<Integer> {
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
-      var task = pool.submit(() -> {
+      var t = pool.submit(() -> {
         var worker = getWorkerRemote(ip);
         worker.doMap();
         return 0;
       });
-      tasks.add(task);
+      tasks.add(t);
     }
     for (var t : tasks) {
       t.get();
-    }   
+    }
+    
+    tasks.clear();
     for (var ip : mapRed.workers) {
-      var worker = getWorkerRemote((String) ip);
-      worker.gatherPartition(mapRed.workers.indexOf(ip));
+      var t = pool.submit(() -> {
+        var worker = getWorkerRemote((String) ip);
+        worker.gatherPartition(mapRed.workers.indexOf(ip));
+        return 0;
+      });
+      tasks.add(t);
+    }
+    for (var t : tasks) {
+      t.get();
     }
         
-    System.out.println("FINISHED");
+    out.println("FINISHED");
     Files.delete(tempFileFullPath);
     return 0;
   }
