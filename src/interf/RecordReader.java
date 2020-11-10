@@ -8,12 +8,12 @@ import java.io.Serializable;
 
 public interface RecordReader<K extends Comparable<K> & Serializable, V extends Serializable> extends Closeable {
   
-  public void init(File in) throws FileNotFoundException, IOException;
+  void init(File in) throws FileNotFoundException, IOException;
       
-  public K getCurrentKey() throws IOException;
+  K getCurrentKey() throws IOException;
   
-  public V getCurrentValue() throws IOException;
+  V getCurrentValue() throws IOException;
   
-  public boolean readOneAndAdvance() throws IOException;
+  boolean readOneAndAdvance() throws IOException;
 
 }

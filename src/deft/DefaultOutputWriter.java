@@ -64,8 +64,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       this.rec = rec;
     }
     @Override
-    public int compareTo(QElement o) {
-      return rec.compareTo(o.rec);
+    public int compareTo(QElement e) {
+      return rec.compareTo(e.rec);
     }   
   }
   
