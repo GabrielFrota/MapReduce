@@ -24,7 +24,6 @@ import lib.CommandLine.Command;
 class Worker implements Callable<Integer> {
     
   private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
-
     private static final long serialVersionUID = 1L;
 
     public WorkerRemoteImpl() throws RemoteException {
@@ -148,7 +147,6 @@ class Worker implements Callable<Integer> {
         throw new RemoteException(ex.getMessage());
       }
     }
-
   }
   
   @Override

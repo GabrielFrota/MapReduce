@@ -5,11 +5,11 @@ import java.rmi.RemoteException;
 
 import interf.MapReduce;
 
-public interface MasterRemote extends Remote {
+interface MasterRemote extends Remote {
   
   @SuppressWarnings("rawtypes")
-  public MapReduce getMapReduceImpl() throws RemoteException;
+  MapReduce getMapReduceImpl() throws RemoteException;
   
-  public final static String NAME = "MasterRemote";
+  String NAME = "MasterRemote";
 
 }

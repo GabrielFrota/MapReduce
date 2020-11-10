@@ -1,6 +1,7 @@
 package deft;
 
 import java.io.BufferedWriter;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,8 +12,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.PriorityQueue;
 
 import interf.RecordWriter;
@@ -57,35 +56,41 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     }
   }
   
+  private class QElement implements Comparable<QElement> {
+    public final ObjectInputStream in;
+    public Record<K, V> rec;
+    public QElement(ObjectInputStream in, Record<K, V> rec) {
+      this.in = in;
+      this.rec = rec;
+    }
+    @Override
+    public int compareTo(QElement o) {
+      return rec.compareTo(o.rec);
+    }   
+  }
+  
   @SuppressWarnings("unchecked")
   @Override
   public void merge(Iterable<File> files, File out) throws Exception {
-    var map = new HashMap<ObjectInputStream, Record<K, V>>();
-    Comparator<ObjectInputStream> comp = (o1, o2) -> {
-      return map.get(o1).compareTo(map.get(o2));
-    };
-    var queue = new PriorityQueue<ObjectInputStream>(comp);
+    var queue = new PriorityQueue<QElement>();
     for (var f : files) {
       var in = new ObjectInputStream(new FileInputStream(f));  
-      var rec = in.readObject(); 
-      map.put(in, (Record<K, V>) rec);
-      queue.add(in);
+      var rec = (Record<K, V>) in.readObject(); 
+      queue.add(new QElement(in, rec));
     }   
     
     var outStr = new BufferedWriter(new FileWriter(out));
     while (true) {
-      var in = queue.poll();
-      if (in == null) break;
-      var rec = map.get(in);
-      outStr.write(rec.getKey().toString() + "\t"
-          + rec.getValue().toString() + "\n");
+      var elem = queue.poll();
+      if (elem == null) 
+        break;
+      outStr.write(elem.rec.getKey().toString() + "\t"
+          + elem.rec.getValue().toString() + "\n");
       try {
-        rec = (Record<K, V>) in.readObject();
-        map.put(in, rec);
-        queue.add(in);
-      } catch (IOException ex) {
-        map.remove(in);
-        in.close();
+        elem.rec = (Record<K, V>) elem.in.readObject();
+        queue.add(elem);
+      } catch (EOFException ex) {
+        elem.in.close();
       }
     }
     outStr.close();

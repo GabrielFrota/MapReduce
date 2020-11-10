@@ -34,7 +34,7 @@ import lib.CommandLine.Option;
 
 @Command(name = "core/Master", mixinStandardHelpOptions = false, 
     description = "Master proccess for distributed MapReduce jobs in a cluster.")
-public class Master implements Callable<Integer> {
+class Master implements Callable<Integer> {
   
   private String timestamp = "_" + LocalDateTime.now().toString().replace(".", "_");
   @SuppressWarnings("rawtypes")
@@ -43,7 +43,7 @@ public class Master implements Callable<Integer> {
   private class MasterRemoteImpl extends UnicastRemoteObject implements MasterRemote {  
     private static final long serialVersionUID = 1L;
 
-    protected MasterRemoteImpl() throws RemoteException {
+    public MasterRemoteImpl() throws RemoteException {
       super(1100);
     }
     
@@ -104,8 +104,11 @@ public class Master implements Callable<Integer> {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Integer call() throws Exception {
-    var params = Map.of(input, "--input", workersFile, "--workers",
-        mapReduceFile, "--mp");
+    var params = Map.of(
+      input, "--input", 
+      workersFile, "--workers",
+      mapReduceFile, "--mp"
+    );
     for (var p : params.entrySet()) {
       if (!checkExistsCanRead(p.getKey(), p.getValue()))
         return -1;
@@ -124,6 +127,8 @@ public class Master implements Callable<Integer> {
       @Override
       public void visit(int version, int access, String name, String signature, 
                         String superName, String[] interfaces) {
+        if (!remapperIn.isEmpty()) 
+          return;
         var strs = name.split("/");
         strs[strs.length - 1] = timestamp;
         var sj = new StringJoiner("/");
