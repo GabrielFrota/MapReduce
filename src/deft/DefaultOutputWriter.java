@@ -81,15 +81,15 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     
     var outStr = new BufferedWriter(new FileWriter(out));
     while (true) {
-      var elem = queue.poll();
+      var elem = queue.peek();
       if (elem == null) 
         break;
-      outStr.write(elem.rec.getKey().toString() + "\t"
-          + elem.rec.getValue().toString() + "\n");
+      outStr.write(elem.rec.key.toString() + "\t"
+          + elem.rec.value.toString() + "\n");
       try {
         elem.rec = (Record<K, V>) elem.in.readObject();
-        queue.add(elem);
       } catch (EOFException ex) {
+        queue.remove(elem);
         elem.in.close();
       }
     }
