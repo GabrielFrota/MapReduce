@@ -209,8 +209,7 @@ class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }
-    
+    }   
     tasks.clear();
     for (var ip : mapRed.workers) {
       var t = pool.submit(() -> {
