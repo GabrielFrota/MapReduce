@@ -78,12 +78,9 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       var rec = (Record<K, V>) in.readObject(); 
       queue.add(new QElement(in, rec));
     }   
-    
+        
     var outStr = new BufferedWriter(new FileWriter(out));
-    while (true) {
-      var elem = queue.peek();
-      if (elem == null) 
-        break;
+    for (var elem = queue.peek(); !queue.isEmpty(); elem = queue.peek()) {
       outStr.write(elem.rec.key.toString() + "\t"
           + elem.rec.value.toString() + "\n");
       try {

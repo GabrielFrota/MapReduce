@@ -109,8 +109,9 @@ class Worker implements Callable<Integer> {
       var recordReader = inputFormat.getRecordReader(in);
       var recordWriter = mapRed.getMapWriter();
       recordWriter.init(mapOut, mapRed.workers.size());
-      while (recordReader.readOneAndAdvance()) 
+      while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
+      }
       recordReader.close();
       recordWriter.close();
     }
@@ -119,17 +120,17 @@ class Worker implements Callable<Integer> {
     public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
       var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
-      var parts = new ArrayDeque<File>();
+      var chunksToMerge = new ArrayDeque<File>();
       for (int i = 0; i < mapRed.workers.size() - 1; i++) {
-        parts.add(new File("partition." + myIndex + "." + i));
+        chunksToMerge.add(new File("partition." + myIndex + "." + i));
       }
       
       for (int i = 0; i < mapRed.workers.size(); i++) {
         var ip = (String) mapRed.workers.get(i);
         if (!ip.equals(myIp)) {
-          var reg = LocateRegistry.getRegistry((String)ip);
+          var reg = LocateRegistry.getRegistry((String) ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-          var part = Files.newOutputStream(parts.pop().toPath());
+          var part = Files.newOutputStream(chunksToMerge.pop().toPath());
           worker.initInputStream(myChunkName);
           for (byte[] b = worker.read(WorkerRemote.CHUNK_LENGTH); 
                b.length != 0;
@@ -139,9 +140,9 @@ class Worker implements Callable<Integer> {
           worker.closeInputStream();
         }
       }
-      parts.add(new File(myChunkName));
+      chunksToMerge.add(new File(myChunkName));
       try {
-        mapRed.getMapWriter().merge(parts, new File("chunks_merged"));
+        mapRed.getMapWriter().merge(chunksToMerge, new File("chunks_merged"));
       } catch (Exception ex) {
         ex.printStackTrace();
         throw new RemoteException(ex.getMessage());

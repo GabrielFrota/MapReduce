@@ -144,8 +144,8 @@ class Master implements Callable<Integer> {
     var tempFileFullPath = Paths.get("bin/" + tempFilePath);
     byte[] bClazz = cw.toByteArray(); 
     Files.write(tempFileFullPath, bClazz, StandardOpenOption.CREATE);
-    var clazz = new MasterClassLoader().loadClass(tempFilePath.split("\\.")[0]
-        .replace("/", "."), bClazz);
+    var clazzName = tempFilePath.split("\\.")[0].replace("/", ".");
+    var clazz = new MasterClassLoader().loadClass(clazzName, bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
     @SuppressWarnings("unused")
