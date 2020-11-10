@@ -197,21 +197,20 @@ class Master implements Callable<Integer> {
     }
     
     var pool = ForkJoinPool.commonPool();
-    var tasks = new LinkedList<ForkJoinTask<String>>();
+    var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
       var task = pool.submit(() -> {
         var worker = getWorkerRemote(ip);
         worker.doMap();
-        return ip;
+        return 0;
       });
       tasks.add(task);
     }
     for (var t : tasks) {
       t.get();
-    }
-    
+    }   
     for (var ip : mapRed.workers) {
-      var worker = getWorkerRemote((String)ip);
+      var worker = getWorkerRemote((String) ip);
       worker.gatherPartition(mapRed.workers.indexOf(ip));
     }
         

@@ -54,6 +54,11 @@ class Worker implements Callable<Integer> {
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
       mapRed = master.getMapReduceImpl();
     }
+    
+    @Override
+    public String getFinished() throws RemoteException {
+      return System.getProperty("java.rmi.server.hostname") + " finished execution";
+    }
 
     @Override
     public boolean createNewFile(String fileName) throws RemoteException, IOException {

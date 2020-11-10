@@ -16,10 +16,12 @@ interface WorkerRemote extends Remote {
   String getOK() throws RemoteException;
   
   String getIp() throws RemoteException;
-  
+    
   void setMasterIp(String ip) throws RemoteException;
   
   void downloadImpl() throws RemoteException, NotBoundException;
+  
+  String getFinished() throws RemoteException;
   
   // file operations to be called remotely
   
