@@ -21,7 +21,7 @@ import lib.CommandLine.Command;
 
 @Command(name = "core/Worker", mixinStandardHelpOptions = true, 
   description = "Worker proccess for distributed MapReduce jobs in a cluster.")
-public class Worker implements Callable<Integer> {
+class Worker implements Callable<Integer> {
     
   private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
 
