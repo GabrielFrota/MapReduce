@@ -196,7 +196,7 @@ class Master implements Callable<Integer> {
         worker.closeOutputStream();
       }
     }
-    
+     
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
@@ -222,7 +222,7 @@ class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
-        
+    
     out.println("FINISHED");
     Files.delete(tempFileFullPath);
     return 0;
