@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import interf.RecordWriter;
@@ -80,13 +81,13 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     }   
         
     var outStr = new BufferedWriter(new FileWriter(out));
-    for (var elem = queue.peek(); !queue.isEmpty(); elem = queue.peek()) {
-      outStr.write(elem.rec.key.toString() + "\t"
-          + elem.rec.value.toString() + "\n");
+    for (var elem = queue.poll(); !queue.isEmpty(); elem = queue.poll()) {
+      outStr.write(elem.rec.getKey().toString() + "\t"
+          + elem.rec.getValue().toString() + "\n");
       try {
         elem.rec = (Record<K, V>) elem.in.readObject();
+        queue.add(elem);
       } catch (EOFException ex) {
-        queue.remove(elem);
         elem.in.close();
       }
     }

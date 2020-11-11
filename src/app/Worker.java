@@ -11,7 +11,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
@@ -125,7 +125,7 @@ class Worker implements Callable<Integer> {
     public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
       var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
-      var chunksToMerge = new ArrayDeque<File>();
+      var chunksToMerge = new LinkedList<File>();
       for (int i = 0; i < mapRed.workers.size() - 1; i++) {
         chunksToMerge.add(new File("partition." + myIndex + "." + i));
       }
@@ -135,7 +135,7 @@ class Worker implements Callable<Integer> {
         if (!ip.equals(myIp)) {
           var reg = LocateRegistry.getRegistry((String) ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-          var part = Files.newOutputStream(chunksToMerge.pop().toPath());
+          var part = Files.newOutputStream(chunksToMerge.removeFirst().toPath());
           worker.initInputStream(myChunkName);
           for (byte[] b = worker.read(WorkerRemote.CHUNK_LENGTH); 
                b.length != 0;
