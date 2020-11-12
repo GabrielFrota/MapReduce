@@ -11,10 +11,12 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import deft.DefaultOutputWriter;
 import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
@@ -24,6 +26,7 @@ import lib.CommandLine.Command;
 class Worker implements Callable<Integer> {
     
   private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
+    
     private static final long serialVersionUID = 1L;
 
     public WorkerRemoteImpl() throws RemoteException {
@@ -112,7 +115,7 @@ class Worker implements Callable<Integer> {
       var mapOut = new File(mapRed.getInputName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = mapRed.getMapWriter();
+      var recordWriter = mapRed.getReaderWriter();
       recordWriter.init(mapOut, mapRed.workers.size());
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
@@ -121,13 +124,15 @@ class Worker implements Callable<Integer> {
       recordWriter.close();
     }
     
+    private Iterable<File> partitionChunks;
+    
     @Override
     public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
       var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
-      var chunksToMerge = new LinkedList<File>();
+      var chunksFromPartition = new LinkedList<File>();
       for (int i = 0; i < mapRed.workers.size() - 1; i++) {
-        chunksToMerge.add(new File("partition." + myIndex + "." + i));
+        chunksFromPartition.add(new File(myChunkName + "." + i));
       }
       
       for (int i = 0; i < mapRed.workers.size(); i++) {
@@ -135,24 +140,32 @@ class Worker implements Callable<Integer> {
         if (!ip.equals(myIp)) {
           var reg = LocateRegistry.getRegistry((String) ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
-          var part = Files.newOutputStream(chunksToMerge.removeFirst().toPath());
+          var path = chunksFromPartition.getFirst().toPath();
+          Collections.rotate(chunksFromPartition, -1);
+          var out = Files.newOutputStream(path);
           worker.initInputStream(myChunkName);
           for (byte[] b = worker.read(WorkerRemote.CHUNK_LENGTH); 
                b.length != 0;
                b = worker.read(WorkerRemote.CHUNK_LENGTH)) {
-            part.write(b);
+            out.write(b);
           }
           worker.closeInputStream();
+          out.close();
         }
       }
-      chunksToMerge.add(new File(myChunkName));
-      try {
-        mapRed.getMapWriter().merge(chunksToMerge, new File("chunks_merged"));
-      } catch (Exception ex) {
-        ex.printStackTrace();
-        throw new RemoteException(ex.getMessage());
+      chunksFromPartition.add(new File(myChunkName));
+      partitionChunks = chunksFromPartition;
+    }
+    
+    @Override
+    public void doReduce() throws RemoteException, IOException, ClassNotFoundException {
+      var reader = (DefaultOutputWriter) mapRed.getReaderWriter();
+      reader.initReader(partitionChunks);
+      for (var r = reader.getNextKeyValues(); r != null; r = reader.getNextKeyValues()) {
+        mapRed.reduce((Comparable)r.getKey(), (Iterable)r.getValue(), null);
       }
     }
+    
   }
   
   @Override

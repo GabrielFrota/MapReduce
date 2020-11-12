@@ -9,7 +9,8 @@ import java.util.Objects;
 import deft.DefaultOutputWriter;
 
 public abstract class MapReduce <K1 extends Comparable<K1> & Serializable, V1 extends Serializable, 
-                                 K2 extends Comparable<K2> & Serializable, V2 extends Serializable> 
+                                 K2 extends Comparable<K2> & Serializable, V2 extends Serializable,
+                                 K3 extends Comparable<K3> & Serializable, V3 extends Serializable> 
   implements Serializable {
   
   private static final long serialVersionUID = 1L;
@@ -29,12 +30,14 @@ public abstract class MapReduce <K1 extends Comparable<K1> & Serializable, V1 ex
   
   public final List<String> workers = new ArrayList<String>();
     
-  public RecordWriter<K2, V2> getMapWriter() {
+  public RecordWriter<K2, V2> getReaderWriter() {
     return new DefaultOutputWriter<K2, V2>();
   }
   
   public abstract InputFormat<K1, V1> getInputFormat();
   
   public abstract void map(K1 k, V1 v, RecordWriter<K2, V2> w) throws IOException;
+  
+  public abstract void reduce(K2 k, Iterable<V2> values, RecordWriter<K3, V3> w) throws IOException;
   
 }

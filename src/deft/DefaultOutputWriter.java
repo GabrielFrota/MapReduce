@@ -10,9 +10,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 import interf.RecordWriter;
@@ -59,38 +60,61 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   
   private class QElement implements Comparable<QElement> {
     public final ObjectInputStream in;
-    public Record<K, V> rec;
-    public QElement(ObjectInputStream in, Record<K, V> rec) {
+    public Record<K, V> cur;
+    public QElement(ObjectInputStream in, Record<K, V> cur) {
       this.in = in;
-      this.rec = rec;
+      this.cur = cur;
     }
     @Override
     public int compareTo(QElement e) {
-      return rec.compareTo(e.rec);
+      return cur.compareTo(e.cur);
     }   
   }
   
+  private PriorityQueue<QElement> queue;
+  
   @SuppressWarnings("unchecked")
-  @Override
-  public void merge(Iterable<File> files, File out) throws Exception {
-    var queue = new PriorityQueue<QElement>();
+  public void initReader(Iterable<File> files) throws IOException, ClassNotFoundException {
+    queue = new PriorityQueue<QElement>(); 
     for (var f : files) {
       var in = new ObjectInputStream(new FileInputStream(f));  
       var rec = (Record<K, V>) in.readObject(); 
       queue.add(new QElement(in, rec));
-    }   
-        
-    var outStr = new BufferedWriter(new FileWriter(out));
-    for (var elem = queue.poll(); !queue.isEmpty(); elem = queue.poll()) {
-      outStr.write(elem.rec.getKey().toString() + "\t"
-          + elem.rec.getValue().toString() + "\n");
+    }
+  }
+  
+  public AbstractMap.SimpleImmutableEntry<K, Iterable<V>> getNextKeyValues() 
+      throws IOException, ClassNotFoundException {   
+    var elem = queue.poll();
+    if (elem == null) 
+      return null;
+    var key = elem.cur.getKey();
+    var values = new LinkedList<V>();
+    values.add(elem.cur.getValue());
+    try {
+      elem.cur = (Record<K, V>) elem.in.readObject();
+      queue.add(elem);
+    } catch (EOFException ex) {
+      elem.in.close();
+    } 
+    while (key.equals(queue.peek().cur.getKey())) {
+      elem = queue.poll();
+      values.add(elem.cur.getValue());
       try {
-        elem.rec = (Record<K, V>) elem.in.readObject();
+        elem.cur = (Record<K, V>) elem.in.readObject();
         queue.add(elem);
       } catch (EOFException ex) {
         elem.in.close();
       }
     }
+    return new AbstractMap.SimpleImmutableEntry<K, Iterable<V>>(key, values);
+  }
+  
+  
+  @Override
+  public void merge(Iterable<File> files, File out) throws Exception {       
+    var outStr = new BufferedWriter(new FileWriter(out));
+
     outStr.close();
   }
   

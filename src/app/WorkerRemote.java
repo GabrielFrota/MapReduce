@@ -1,5 +1,6 @@
 package app;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -52,5 +53,7 @@ interface WorkerRemote extends Remote {
   void doMap() throws RemoteException, IOException;
   
   void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException;
+  
+  void doReduce() throws RemoteException, IOException, ClassNotFoundException;
   
 }
