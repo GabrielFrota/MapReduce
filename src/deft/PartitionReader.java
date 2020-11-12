@@ -12,7 +12,7 @@ import java.util.PriorityQueue;
 import interf.Record;
 import interf.RecordReader;
 
-public class PartitionRecordReader <K extends Comparable<K> & Serializable, V extends Serializable> 
+public class PartitionReader <K extends Comparable<K> & Serializable, V extends Serializable> 
     implements RecordReader<K, LinkedList<V>> {
   
   private class QElement implements Comparable<QElement> {
@@ -31,7 +31,7 @@ public class PartitionRecordReader <K extends Comparable<K> & Serializable, V ex
   private PriorityQueue<QElement> queue;
   
   @SuppressWarnings("unchecked")
-  public PartitionRecordReader(Iterable<File> chunks) throws IOException, ClassNotFoundException {
+  public PartitionReader(Iterable<File> chunks) throws IOException, ClassNotFoundException {
     queue = new PriorityQueue<QElement>(); 
     for (var f : chunks) {
       var in = new ObjectInputStream(new FileInputStream(f));  
