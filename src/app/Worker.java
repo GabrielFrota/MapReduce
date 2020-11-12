@@ -16,8 +16,8 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-import deft.GatherRecordReader;
-import deft.ScatterRecordWriter;
+import deft.PartitionRecordReader;
+import deft.PartitionRecordWriter;
 import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
@@ -115,7 +115,7 @@ class Worker implements Callable<Integer> {
       var in = new File(mapRed.getInputName());
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = new ScatterRecordWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
+      var recordWriter = new PartitionRecordWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
@@ -123,7 +123,7 @@ class Worker implements Callable<Integer> {
       recordWriter.close();
     }
     
-    private Iterable<File> partitionChunks;
+    private Iterable<File> chunks;
     
     @Override
     public void gatherChunks(int myIndex) throws RemoteException, IOException, NotBoundException {
@@ -153,13 +153,13 @@ class Worker implements Callable<Integer> {
         }
       }
       chunksFromPartition.add(new File(myChunkName));
-      partitionChunks = chunksFromPartition;
+      chunks = chunksFromPartition;
     }
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void doReduce() throws RemoteException, IOException, ClassNotFoundException {
-      var recordReader = new GatherRecordReader(partitionChunks);
+      var recordReader = new PartitionRecordReader(chunks);
       while (recordReader.readOneAndAdvance()) {
         mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), null);
       }

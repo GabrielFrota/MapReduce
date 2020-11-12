@@ -10,14 +10,14 @@ import java.util.Collections;
 import interf.Record;
 import interf.RecordWriter;
 
-public class ScatterRecordWriter <K extends Comparable<K> & Serializable, V extends Serializable> 
+public class PartitionRecordWriter <K extends Comparable<K> & Serializable, V extends Serializable> 
     implements RecordWriter<K, V> {
     
   private ArrayList<Record<K, V>>[] parts;
   private ObjectOutputStream[] ooss;
      
   @SuppressWarnings("unchecked")
-  public ScatterRecordWriter(String prefix, int numPartitions) throws IOException {
+  public PartitionRecordWriter(String prefix, int numPartitions) throws IOException {
     parts = new ArrayList[numPartitions];
     ooss = new ObjectOutputStream[numPartitions];
     for (int i = 0; i < numPartitions; i++) {
