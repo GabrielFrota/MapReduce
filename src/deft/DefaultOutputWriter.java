@@ -115,6 +115,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
           queue.add(elem);
         } catch (EOFException ex) {
           elem.in.close();
+          if (queue.peek() == null)
+            break;
         }
       }
       return new AbstractMap.SimpleImmutableEntry<K, Iterable<V>>(key, values);
