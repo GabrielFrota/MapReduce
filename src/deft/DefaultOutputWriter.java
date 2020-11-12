@@ -96,7 +96,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       queue.add(elem);
     } catch (EOFException ex) {
       elem.in.close();
-    } 
+    }
+    if (queue.peek() == null) return null;
     while (key.equals(queue.peek().cur.getKey())) {
       elem = queue.poll();
       values.add(elem.cur.getValue());
