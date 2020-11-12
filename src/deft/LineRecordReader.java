@@ -15,8 +15,7 @@ public class LineRecordReader implements RecordReader<Long, String> {
   private String currentValue;
   private long cnt;
   
-  @Override
-  public void init(File in) throws FileNotFoundException, IOException {
+  public LineRecordReader(File in) throws FileNotFoundException {
     reader = new BufferedReader(new FileReader(in));
   }
 

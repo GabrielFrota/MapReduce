@@ -52,7 +52,7 @@ interface WorkerRemote extends Remote {
   
   void doMap() throws RemoteException, IOException;
   
-  void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException;
+  void gatherChunks(int myIndex) throws RemoteException, IOException, NotBoundException;
   
   void doReduce() throws RemoteException, IOException, ClassNotFoundException;
   

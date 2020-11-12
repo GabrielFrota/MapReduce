@@ -16,7 +16,8 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-import deft.DefaultOutputWriter;
+import deft.GatherRecordReader;
+import deft.ScatterRecordWriter;
 import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
@@ -109,14 +110,12 @@ class Worker implements Callable<Integer> {
     };
         
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void doMap() throws RemoteException, IOException {
       var in = new File(mapRed.getInputName());
-      var mapOut = new File(mapRed.getInputName() + ".mapout");
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = mapRed.getReaderWriter();
-      recordWriter.init(mapOut, mapRed.workers.size());
+      var recordWriter = new ScatterRecordWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
@@ -127,7 +126,7 @@ class Worker implements Callable<Integer> {
     private Iterable<File> partitionChunks;
     
     @Override
-    public void gatherPartition(int myIndex) throws RemoteException, IOException, NotBoundException {
+    public void gatherChunks(int myIndex) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
       var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
       var chunksFromPartition = new LinkedList<File>();
@@ -157,13 +156,14 @@ class Worker implements Callable<Integer> {
       partitionChunks = chunksFromPartition;
     }
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void doReduce() throws RemoteException, IOException, ClassNotFoundException {
-      var reader = (DefaultOutputWriter) mapRed.getReaderWriter();
-      reader.initReader(partitionChunks);
-      for (var r = reader.getNextKeyValues(); r != null; r = reader.getNextKeyValues()) {
-        mapRed.reduce((Comparable)r.getKey(), (Iterable)r.getValue(), null);
+      var recordReader = new GatherRecordReader(partitionChunks);
+      while (recordReader.readOneAndAdvance()) {
+        mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), null);
       }
+      recordReader.close();
     }
     
   }

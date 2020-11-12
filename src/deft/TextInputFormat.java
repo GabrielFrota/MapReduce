@@ -37,9 +37,7 @@ public class TextInputFormat implements InputFormat<Long, String> {
   
   @Override
   public RecordReader<Long, String> getRecordReader(File in) throws IOException {
-    var rec = new LineRecordReader();
-    rec.init(in);
-    return rec;
+    return new LineRecordReader(in);
   }
   
 }
