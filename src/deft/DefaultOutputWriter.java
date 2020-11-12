@@ -85,21 +85,12 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
   
   public AbstractMap.SimpleImmutableEntry<K, Iterable<V>> getNextKeyValues() 
       throws IOException, ClassNotFoundException {   
-    var elem = queue.poll();
-    if (elem == null) 
-      return null;
-    var key = elem.cur.getKey();
-    var values = new LinkedList<V>();
-    values.add(elem.cur.getValue());
     try {
-      elem.cur = (Record<K, V>) elem.in.readObject();
-      queue.add(elem);
-    } catch (EOFException ex) {
-      elem.in.close();
-    }
-    if (queue.peek() == null) return null;
-    while (key.equals(queue.peek().cur.getKey())) {
-      elem = queue.poll();
+      var elem = queue.poll();
+      if (elem == null) 
+        return null;
+      var key = elem.cur.getKey();
+      var values = new LinkedList<V>();
       values.add(elem.cur.getValue());
       try {
         elem.cur = (Record<K, V>) elem.in.readObject();
@@ -107,8 +98,23 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       } catch (EOFException ex) {
         elem.in.close();
       }
+      if (queue.peek() == null) 
+        return null;
+      while (key.equals(queue.peek().cur.getKey())) {
+        elem = queue.poll();
+        values.add(elem.cur.getValue());
+        try {
+          elem.cur = (Record<K, V>) elem.in.readObject();
+          queue.add(elem);
+        } catch (EOFException ex) {
+          elem.in.close();
+        }
+      }
+      return new AbstractMap.SimpleImmutableEntry<K, Iterable<V>>(key, values);
+    } catch (Exception ex) {
+      ex.printStackTrace();
     }
-    return new AbstractMap.SimpleImmutableEntry<K, Iterable<V>>(key, values);
+    return null;
   }
   
   
