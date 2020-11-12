@@ -100,6 +100,9 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
       }
       if (queue.peek() == null) 
         return null;
+      var c = queue.peek().cur;
+      if (c == null)
+        return null;
       while (key.equals(queue.peek().cur.getKey())) {
         elem = queue.poll();
         values.add(elem.cur.getValue());
@@ -116,8 +119,7 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
     }
     return null;
   }
-  
-  
+   
   @Override
   public void merge(Iterable<File> files, File out) throws Exception {       
     var outStr = new BufferedWriter(new FileWriter(out));
