@@ -215,6 +215,7 @@ class Master implements Callable<Integer> {
       var t = pool.submit(() -> {
         var worker = getWorkerRemote((String) ip);
         worker.gatherPartition(mapRed.workers.indexOf(ip));
+        worker.doReduce();
         return 0;
       });
       tasks.add(t);
