@@ -105,6 +105,8 @@ public class DefaultOutputWriter <K extends Comparable<K> & Serializable,
         return null;
       if (key == null)
         return null;
+      if (c.getKey() == null)
+        return null;
       while (key.equals(queue.peek().cur.getKey())) {
         elem = queue.poll();
         values.add(elem.cur.getValue());
