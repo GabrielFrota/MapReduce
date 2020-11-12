@@ -1,6 +1,5 @@
 package app;
 
-import java.io.File;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -21,8 +20,6 @@ interface WorkerRemote extends Remote {
   void setMasterIp(String ip) throws RemoteException;
   
   void downloadImpl() throws RemoteException, NotBoundException;
-  
-  String getFinished() throws RemoteException;
   
   // file operations to be called remotely
   

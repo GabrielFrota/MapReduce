@@ -26,8 +26,7 @@ import lib.CommandLine.Command;
   description = "Worker proccess for distributed MapReduce jobs in a cluster.")
 class Worker implements Callable<Integer> {
     
-  private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
-    
+  private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {   
     private static final long serialVersionUID = 1L;
 
     public WorkerRemoteImpl() throws RemoteException {
@@ -59,11 +58,6 @@ class Worker implements Callable<Integer> {
       mapRed = master.getMapReduceImpl();
     }
     
-    @Override
-    public String getFinished() throws RemoteException {
-      return System.getProperty("java.rmi.server.hostname") + " finished execution";
-    }
-
     @Override
     public boolean createNewFile(String fileName) throws RemoteException, IOException {
       return new File(fileName).createNewFile();
