@@ -1,4 +1,4 @@
-package deft;
+package impl;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,11 +7,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import interf.Record;
 import interf.RecordWriter;
 
 public class PartitionWriter <K extends Comparable<K> & Serializable, V extends Serializable> 
-    implements RecordWriter<K, V> {
+  implements RecordWriter<K, V> {
     
   private ArrayList<Record<K, V>>[] parts;
   private ObjectOutputStream[] ooss;

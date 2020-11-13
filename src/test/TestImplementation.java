@@ -2,7 +2,7 @@ package test;
 
 import java.io.IOException;
 
-import deft.TextInputFormat;
+import impl.TextInputFormat;
 import interf.InputFormat;
 import interf.MapReduce;
 import interf.RecordWriter;

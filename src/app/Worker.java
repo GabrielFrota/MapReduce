@@ -16,8 +16,8 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-import deft.PartitionReader;
-import deft.PartitionWriter;
+import impl.PartitionReader;
+import impl.PartitionWriter;
 import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;

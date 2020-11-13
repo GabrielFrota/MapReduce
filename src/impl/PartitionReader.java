@@ -1,4 +1,4 @@
-package deft;
+package impl;
 
 import java.io.EOFException;
 import java.io.File;
@@ -9,11 +9,10 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
-import interf.Record;
 import interf.RecordReader;
 
 public class PartitionReader <K extends Comparable<K> & Serializable, V extends Serializable> 
-    implements RecordReader<K, LinkedList<V>> {
+  implements RecordReader<K, LinkedList<V>> {
   
   private class QElement implements Comparable<QElement> {
     public final ObjectInputStream in;
@@ -49,9 +48,9 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
     var elem = queue.poll();
     if (elem == null) 
       return false;    
-    key = elem.cur.getKey();
+    key = elem.cur.key;
     values = new LinkedList<V>();
-    values.add(elem.cur.getValue());
+    values.add(elem.cur.value);
     try {
       elem.cur = (Record<K, V>) elem.in.readObject();
       queue.add(elem);
@@ -61,9 +60,9 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
       throw new IOException(cex);
     }  
     
-    while (key.equals(queue.peek().cur.getKey())) {
+    while (key.equals(queue.peek().cur.key)) {
       elem = queue.poll();
-      values.add(elem.cur.getValue());
+      values.add(elem.cur.value);
       try {
         elem.cur = (Record<K, V>) elem.in.readObject();
         queue.add(elem);
