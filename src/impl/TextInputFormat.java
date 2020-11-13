@@ -19,17 +19,17 @@ public class TextInputFormat implements InputFormat<Long, String> {
     var splits = new File[numSplits];
     var reader = new BufferedReader(new FileReader(in));
     for (int i = 0; i < numSplits; i++) {
-      var inSplit = new File(in.getName() + "." + i);
-      var writer = new PrintWriter(new FileWriter(inSplit));
+      var file = new File(in.getName() + "." + i);
+      var out = new PrintWriter(new FileWriter(file));
       long cnt = 0;
       while (cnt <= splitLen) {
         var line = reader.readLine();
         if (line == null) break;
-        writer.println(line);
+        out.println(line);
         cnt += line.getBytes().length;
       }
-      splits[i] = inSplit;
-      writer.close();
+      splits[i] = file;
+      out.close();
     }
     reader.close();
     return splits;
