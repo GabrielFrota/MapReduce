@@ -24,7 +24,8 @@ public class TextInputFormat implements InputFormat<Long, String> {
       long cnt = 0;
       while (cnt <= splitLen) {
         var line = reader.readLine();
-        if (line == null) break;
+        if (line == null) 
+          break;
         writer.println(line);
         cnt += line.getBytes().length;
       }
