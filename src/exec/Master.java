@@ -1,4 +1,4 @@
-package app;
+package exec;
 
 import java.io.File;
 import java.net.Socket;
@@ -209,7 +209,7 @@ class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }   
+    } 
     tasks.clear();
     for (var ip : mapRed.workers) {
       var t = pool.submit(() -> {
