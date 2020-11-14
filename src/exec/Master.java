@@ -87,7 +87,8 @@ class Master implements Callable<Integer> {
   }
   
   private WorkerRemote getWorkerRemote(String ip) 
-    throws RemoteException, AccessException, NotBoundException {
+    throws RemoteException, AccessException, NotBoundException 
+  {
       var reg = LocateRegistry.getRegistry(ip);
       return (WorkerRemote) reg.lookup(WorkerRemote.NAME);
   }
@@ -187,6 +188,7 @@ class Master implements Callable<Integer> {
         if (exists) worker.delete(mapRed.getInputName());
         worker.createNewFile(mapRed.getInputName());
         out.println("Sending " + s + " to worker " + worker.getIp());
+        
         var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[WorkerRemote.CHUNK_LENGTH];
         worker.initOutputStream(mapRed.getInputName());
