@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import interf.RecordReader;
 
-public class LineRecordReader implements RecordReader<Long, String> {
+class LineRecordReader implements RecordReader<Long, String> {
   
   private BufferedReader reader;
   private Long currentKey;

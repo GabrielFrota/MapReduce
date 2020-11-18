@@ -3,8 +3,10 @@ package test;
 import java.io.IOException;
 
 import impl.TextInputFormat;
+import impl.TextOutputFormat;
 import interf.InputFormat;
 import interf.MapReduce;
+import interf.OutputFormat;
 import interf.RecordWriter;
 
 public class TestImplementation extends MapReduce<Long, String, Integer, Integer, Integer, Integer> {
@@ -30,8 +32,12 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
     for (var v : values) {
       cnt += v;
     }
-    //w.write(k, cnt);
-    System.out.println(k + "\t" + cnt);
+    w.write(k, cnt);
+  }
+
+  @Override
+  public OutputFormat<Integer, Integer> getOutputFormat() {
+    return new TextOutputFormat<Integer, Integer>();
   }
   
 }
