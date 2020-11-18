@@ -10,6 +10,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -197,7 +199,8 @@ class Master implements Callable<Integer> {
         worker.closeOutputStream();
       }
     }
-     
+    
+    var start = Instant.now();
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
@@ -247,15 +250,17 @@ class Master implements Callable<Integer> {
       t.get();
     } 
     var recordReader = new PartitionReader(chunksToGather);
-    var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getInputName()));
+    var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getOutputName()));
     while (recordReader.readOneAndAdvance()) {
       mapRed.combine(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
     }
     recordReader.close();
-    recordWriter.close();
-        
-    out.println("FINISHED");
+    recordWriter.close(); 
+    var finish = Instant.now();
     Files.delete(tempFileFullPath);
+    
+    out.println("MapReduce done. Execution time was " 
+        + Duration.between(start, finish).toSeconds() + " seconds");
     return 0;
   }
 
