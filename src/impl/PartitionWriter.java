@@ -51,9 +51,9 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     } 
     var part = parts[i];
     parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
+    var out = new ObjectOutputStream(new FileOutputStream(prefix + "." + i + ".spill." + spills[i].size()));
 
-    spillTask = ForkJoinPool.commonPool().submit(() -> {      
-      var out = new ObjectOutputStream(new FileOutputStream(prefix + "." + i + ".spill." + spills[i].size()));
+    spillTask = ForkJoinPool.commonPool().submit(() -> {          
       Collections.sort(part); 
       for (var rec : part) {
         out.writeObject(rec);
