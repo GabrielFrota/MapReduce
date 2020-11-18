@@ -56,6 +56,8 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
       queue.add(elem);
     } catch (EOFException ex) {
       elem.in.close();
+      if (queue.peek() == null)
+        return true;
     } catch (ClassNotFoundException cex) {
       throw new IOException(cex);
     }  
