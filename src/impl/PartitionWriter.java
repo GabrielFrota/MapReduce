@@ -52,17 +52,15 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     var part = parts[i];
     parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
 
-    
-    spillTask = ForkJoinPool.commonPool().submit(() -> {
-      var file = new File(prefix + "." + i + ".spill." + spills[i].size());
-      file.setWritable(true, false);
-      spills[i].add(file);
-      var out = new ObjectOutputStream(new FileOutputStream(file));
+    spillTask = ForkJoinPool.commonPool().submit(() -> {      
+      var out = new ObjectOutputStream(new FileOutputStream(prefix + "." + i + ".spill." + spills[i].size()));
       Collections.sort(part); 
       for (var rec : part) {
         out.writeObject(rec);
       }
       out.close();
+      var file = new File(prefix + "." + i + ".spill." + spills[i].size());
+      spills[i].add(file);
       return 0;
     });
   }
