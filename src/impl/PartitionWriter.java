@@ -52,6 +52,7 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     var part = parts[i];
     parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
     var file = new File(prefix + "." + i + ".spill." + spills[i].size());
+    file.setWritable(true);
     spills[i].add(file);
     
     spillTask = ForkJoinPool.commonPool().submit(() -> {
