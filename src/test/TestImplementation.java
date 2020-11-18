@@ -17,11 +17,6 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
   public InputFormat<Long, String> getInputFormat() {
     return new TextInputFormat();
   }
-
-  @Override
-  public void preMap(RecordWriter<Integer, Integer> w) throws IOException {
-    w.write(-1, 100);
-  }
   
   @Override
   public void map(Long k, String v, RecordWriter<Integer, Integer> w) throws IOException {

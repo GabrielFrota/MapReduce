@@ -18,5 +18,5 @@ class Record<K extends Comparable<K> & Serializable, V extends Serializable>
   public int compareTo(Record<K, V> o) {
     return key.compareTo(o.key);
   }
-
+  
 }

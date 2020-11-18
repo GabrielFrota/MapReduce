@@ -40,8 +40,10 @@ public abstract class MapReduce <K1, V1,
   
   public void preMap(RecordWriter<K2, V2> w) throws IOException {};
   public void postMap(RecordWriter<K2, V2> w) throws IOException {};
-  public void preReduce(RecordWriter<K3, V2> w) throws IOException {};
-  public void postReduce(RecordWriter<K3, V2> w) throws IOException {};
+  public void preReduce(RecordWriter<K3, V3> w) throws IOException {};
+  public void postReduce(RecordWriter<K3, V3> w) throws IOException {};
+  public void preCombine(RecordWriter<K3, V3> w) throws IOException {};
+  public void postCombine(RecordWriter<K3, V3> w) throws IOException {};
   
   public final List<String> workers = new ArrayList<String>();
     

@@ -251,9 +251,11 @@ class Master implements Callable<Integer> {
     } 
     var recordReader = new PartitionReader(chunksToGather);
     var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getOutputName()));
+    mapRed.preCombine(recordWriter);
     while (recordReader.readOneAndAdvance()) {
       mapRed.combine(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
     }
+    mapRed.postCombine(recordWriter);
     recordReader.close();
     recordWriter.close(); 
     var finish = Instant.now();
