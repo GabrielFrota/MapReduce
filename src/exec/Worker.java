@@ -110,9 +110,11 @@ class Worker implements Callable<Integer> {
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var recordWriter = new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
+      mapRed.preMap(recordWriter);
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
+      mapRed.postMap(recordWriter);
       recordReader.close();
       recordWriter.close();
     }
@@ -157,9 +159,11 @@ class Worker implements Callable<Integer> {
       var outputFormat = mapRed.getOutputFormat();
       var recordReader = new PartitionReader(chunks);
       var recordWriter = outputFormat.getRecordWriter(out);
+      mapRed.preReduce(recordWriter);
       while (recordReader.readOneAndAdvance()) {
         mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
+      mapRed.postReduce(recordWriter);
       recordReader.close();
       recordWriter.close();
     }

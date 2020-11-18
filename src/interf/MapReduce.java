@@ -38,6 +38,11 @@ public abstract class MapReduce <K1, V1,
     return outputName;
   }
   
+  public void preMap(RecordWriter<K2, V2> w) throws IOException {};
+  public void postMap(RecordWriter<K2, V2> w) throws IOException {};
+  public void preReduce(RecordWriter<K3, V2> w) throws IOException {};
+  public void postReduce(RecordWriter<K3, V2> w) throws IOException {};
+  
   public final List<String> workers = new ArrayList<String>();
     
   public abstract InputFormat<K1, V1> getInputFormat();

@@ -19,6 +19,11 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
   }
 
   @Override
+  public void preMap(RecordWriter<Integer, Integer> w) throws IOException {
+    w.write(-1, Integer.parseInt("Startando"));
+  }
+  
+  @Override
   public void map(Long k, String v, RecordWriter<Integer, Integer> w) throws IOException {
     var strs = v.split(",");
     for (var s : strs) {
