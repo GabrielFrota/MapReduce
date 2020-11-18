@@ -20,7 +20,7 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
 
   @Override
   public void preMap(RecordWriter<Integer, Integer> w) throws IOException {
-    w.write(-1, Integer.parseInt("Startando"));
+    w.write(-1, 100);
   }
   
   @Override

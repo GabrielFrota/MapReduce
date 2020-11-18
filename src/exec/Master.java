@@ -172,6 +172,7 @@ class Master implements Callable<Integer> {
       mapRed.workers.add(ip);
     }
     mapRed.setInputName(input.getName());
+    mapRed.setOutputName(output.getName());
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
@@ -222,7 +223,11 @@ class Master implements Callable<Integer> {
       tasks.add(t);
     }
     for (var t : tasks) {
-      t.get();
+      try {
+        t.get();
+      } catch (Exception ex) {
+        ex.getCause().printStackTrace();
+      }
     }
     
     out.println("FINISHED");
