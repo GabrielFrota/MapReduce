@@ -55,7 +55,7 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     
     spillTask = ForkJoinPool.commonPool().submit(() -> {
       var file = new File(prefix + "." + i + ".spill." + spills[i].size());
-      file.setWritable(true);
+      file.setWritable(true, false);
       spills[i].add(file);
       var out = new ObjectOutputStream(new FileOutputStream(file));
       Collections.sort(part); 
