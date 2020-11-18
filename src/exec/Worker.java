@@ -154,22 +154,18 @@ class Worker implements Callable<Integer> {
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public void doReduce() throws RemoteException, IOException, ClassNotFoundException {
-      try {
-        var out = new File(mapRed.getOutputName());
-        var outputFormat = mapRed.getOutputFormat();
-        var recordReader = new PartitionReader(chunks);
-        var recordWriter = outputFormat.getRecordWriter(out);
-        mapRed.preReduce(recordWriter);
-        while (recordReader.readOneAndAdvance()) {
-          mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
-        }
-        mapRed.postReduce(recordWriter);
-        recordReader.close();
-        recordWriter.close();
-      } catch (Exception ex) {
-        ex.printStackTrace();
+    public void doReduce() throws RemoteException, IOException, ClassNotFoundException {   
+      var out = new File(mapRed.getOutputName());
+      var outputFormat = mapRed.getOutputFormat();
+      var recordReader = new PartitionReader(chunks);
+      var recordWriter = outputFormat.getRecordWriter(out);
+      mapRed.preReduce(recordWriter);
+      while (recordReader.readOneAndAdvance()) {
+        mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
       }
+      mapRed.postReduce(recordWriter);
+      recordReader.close();
+      recordWriter.close();
     }
     
   }

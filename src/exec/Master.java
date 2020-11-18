@@ -223,13 +223,26 @@ class Master implements Callable<Integer> {
       tasks.add(t);
     }
     for (var t : tasks) {
-      try {
-        t.get();
-      } catch (Exception ex) {
-        ex.getCause().printStackTrace();
-      }
+      t.get();
     }
-    
+    for (var ip : mapRed.workers) {
+      var t = pool.submit(() -> {
+        var worker = getWorkerRemote((String) ip);
+        var output = Files.newOutputStream(Paths.get(mapRed.getOutputName()));
+        worker.initInputStream(mapRed.getOutputName());
+        for (byte[] bytes = worker.read(WorkerRemote.CHUNK_LENGTH); 
+             bytes.length != 0;
+             bytes = worker.read(WorkerRemote.CHUNK_LENGTH)) {
+          output.write(bytes);
+        }
+        worker.closeInputStream();
+        output.close();
+        return 0;
+      });
+    }
+    for (var t : tasks) {
+      t.get();
+    }      
     out.println("FINISHED");
     Files.delete(tempFileFullPath);
     return 0;
