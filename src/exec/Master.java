@@ -26,6 +26,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
+import impl.PartitionReader;
 import interf.MapReduce;
 import lib.ClassFileServer;
 import lib.CommandLine;
@@ -114,10 +115,8 @@ class Master implements Callable<Integer> {
       if (!checkExistsCanRead(p.getKey(), p.getValue()))
         return -1;
     }
-    if (output.exists()) 
-      output.delete();
-    if (!output.createNewFile()) {
-      printErr("Output file creation failed.");
+    if (output.exists()) {
+      printErr("Invalid --output parameter value. A path to a non existing file is required.");
       return -1;
     }
     
@@ -225,11 +224,14 @@ class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
+    var chunkName = mapRed.getOutputName() + ".0";
+    var chunksToGather = new LinkedList<File>();
     for (var ip : mapRed.workers) {
       var t = pool.submit(() -> {
         var worker = getWorkerRemote((String) ip);
-        var output = Files.newOutputStream(Paths.get(mapRed.getOutputName()));
-        worker.initInputStream(mapRed.getOutputName());
+        chunksToGather.add(new File(chunkName + "." + ip));
+        var output = Files.newOutputStream(chunksToGather.getLast().toPath());
+        worker.initInputStream(chunkName);
         for (byte[] bytes = worker.read(WorkerRemote.CHUNK_LENGTH); 
              bytes.length != 0;
              bytes = worker.read(WorkerRemote.CHUNK_LENGTH)) {
@@ -239,10 +241,19 @@ class Master implements Callable<Integer> {
         output.close();
         return 0;
       });
+      tasks.add(t);
     }
     for (var t : tasks) {
       t.get();
-    }      
+    } 
+    var recordReader = new PartitionReader(chunksToGather);
+    var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getInputName()));
+    while (recordReader.readOneAndAdvance()) {
+      mapRed.combine(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
+    }
+    recordReader.close();
+    recordWriter.close();
+        
     out.println("FINISHED");
     Files.delete(tempFileFullPath);
     return 0;

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public abstract class MapReduce <K1, V1, 
                                  K2 extends Comparable<K2> & Serializable, V2 extends Serializable,
-                                 K3, V3> 
+                                 K3 extends Comparable<K3> & Serializable, V3 extends Serializable> 
   implements Serializable {
   
   private static final long serialVersionUID = 1L;
@@ -47,10 +47,16 @@ public abstract class MapReduce <K1, V1,
     
   public abstract InputFormat<K1, V1> getInputFormat();
   
+  public abstract OutputFormat<K3, V3> getOutputFormat();
+  
   public abstract void map(K1 k, V1 v, RecordWriter<K2, V2> w) throws IOException;
   
   public abstract void reduce(K2 k, Iterable<V2> values, RecordWriter<K3, V3> w) throws IOException;
   
-  public abstract OutputFormat<K3, V3> getOutputFormat();
+  public void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException {
+    for (var v : values) {
+      w.write(k, v);
+    }
+  }
   
 }
