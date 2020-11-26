@@ -19,6 +19,7 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
   private String prefix;
   private ArrayList<Record<K, V>>[] parts;
   private LinkedList<File>[] spills;
+  //private int GOOD_SIZE = 10000000;
   private int MAX_SIZE = 10;
      
   @SuppressWarnings("unchecked")
@@ -32,39 +33,6 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     }
   }
   
-  private int getPartition(K key) {
-    return (key.hashCode() & Integer.MAX_VALUE) % parts.length;
-  }
-  
-  private ForkJoinTask<Integer> spillTask;
-  
-  private void spill(int i) throws IOException {
-    if (parts[i].size() == 0)
-      return;
-    if (spillTask != null) {
-      try {
-        spillTask.get();
-        spillTask = null;
-      } catch (Exception ex) {
-        throw new RuntimeException(ex);
-      }
-    } 
-    var part = parts[i];
-    parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
-    var out = new ObjectOutputStream(new FileOutputStream(prefix + "." + i + ".spill." + spills[i].size()));
-     // HERE
-    spillTask = ForkJoinPool.commonPool().submit(() -> {          
-      Collections.sort(part); 
-      for (var rec : part) {
-        out.writeObject(rec);
-      }
-      out.close();
-      var file = new File(prefix + "." + i + ".spill." + spills[i].size());
-      spills[i].add(file);
-      return 0;
-    });
-  }
-
   @Override
   public void write(K key, V value) throws IOException {    
     var rec = new Record<K, V>(key, value);
@@ -80,22 +48,62 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
   @Override
   public void close() throws IOException {
     for (int i = 0; i < parts.length; i++) {
-      spill(i);
-      var files = spills[i];
-      try {
-        var reader = new PartitionReader<K, V>(files);
-        var writer = new ObjectOutputStream(new FileOutputStream(prefix + "." + i));
-        while (reader.readOneAndAdvance()) {
-          for (var v : reader.getCurrentValue()) {     
-            writer.writeObject(new Record<K, V>(reader.getCurrentKey(), v));
+      var fileName = prefix + "." + i;
+      var out = new ObjectOutputStream(new FileOutputStream(fileName));
+      
+      if (spills[i].size() == 0) {
+        Collections.sort(parts[i]);
+        for (var rec : parts[i]) {
+          out.writeObject(rec);
+        }
+      } else {
+        spill(i);
+        var in = new PartitionReader<K, V>(spills[i]);
+        while (in.readOneAndAdvance()) {
+          for (var rec : in.getRecords()) {
+            out.writeObject(rec);
           }
         }
-        reader.close();
-        writer.close();
-      } catch (Exception ex) {
-        ex.printStackTrace();
+        in.close();
       }
+      out.close();
     }
+  }
+  
+  private int getPartition(K key) {
+    return (key.hashCode() & Integer.MAX_VALUE) % parts.length;
+  }
+  
+  private ForkJoinTask<Integer> spillTask;
+  private ObjectOutputStream spillOut;
+  
+  private void spill(int i) throws IOException {
+    if (parts[i].size() == 0)
+      return;
+    if (spillTask != null) {
+      try {
+        spillTask.get();
+        spillTask = null;
+        spillOut.close();
+        spillOut = null;
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    } 
+    var part = parts[i];
+    parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
+    var fileName = prefix + "." + i + ".spill." + spills[i].size();
+    var file = new File(fileName);
+    spills[i].add(file);
+    
+    spillOut = new ObjectOutputStream(new FileOutputStream(file));      
+    spillTask = ForkJoinPool.commonPool().submit(() -> {          
+      Collections.sort(part); 
+      for (var rec : part) {
+        spillOut.writeObject(rec);
+      }
+      return 0;
+    });
   }
   
 }

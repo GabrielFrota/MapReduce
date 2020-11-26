@@ -30,16 +30,20 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
   private PriorityQueue<QElement> queue;
   
   @SuppressWarnings("unchecked")
-  public PartitionReader(Iterable<File> chunks) throws IOException, ClassNotFoundException {
-    queue = new PriorityQueue<QElement>(); 
-    for (var f : chunks) {
-      var in = new ObjectInputStream(new FileInputStream(f));  
-      var rec = (Record<K, V>) in.readObject(); 
-      queue.add(new QElement(in, rec));
+  public PartitionReader(Iterable<File> chunks) throws IOException {
+    try {
+      queue = new PriorityQueue<QElement>(); 
+      for (var f : chunks) {
+        var in = new ObjectInputStream(new FileInputStream(f));  
+        var rec = (Record<K, V>) in.readObject(); 
+        queue.add(new QElement(in, rec));
+      }
+    } catch (ClassNotFoundException ex) {
+      throw new IllegalArgumentException(ex);
     }
   }
   
-  private K key;
+  private LinkedList<Record<K, V>> records;
   private LinkedList<V> values;
   
   @SuppressWarnings("unchecked")
@@ -48,8 +52,9 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
     var elem = queue.poll();
     if (elem == null) 
       return false;    
-    key = elem.cur.key;
-    values = new LinkedList<V>();
+    records = new LinkedList<>();
+    records.add(elem.cur);
+    values = new LinkedList<>();
     values.add(elem.cur.value);
     try {
       elem.cur = (Record<K, V>) elem.in.readObject();
@@ -62,8 +67,9 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
       throw new IOException(cex);
     }  
     
-    while (key.equals(queue.peek().cur.key)) {
+    while (records.get(0).key.equals(queue.peek().cur.key)) {
       elem = queue.poll();
+      records.add(elem.cur);
       values.add(elem.cur.value);
       try {
         elem.cur = (Record<K, V>) elem.in.readObject();
@@ -81,15 +87,19 @@ public class PartitionReader <K extends Comparable<K> & Serializable, V extends 
   
   @Override
   public K getCurrentKey() throws IOException {
-    return key;
+    return records.get(0).key;
   }
   
   @Override
   public LinkedList<V> getCurrentValue() throws IOException {
     return values;
   }
-      
+        
   @Override
   public void close() throws IOException {}
+  
+  LinkedList<Record<K, V>> getRecords() {
+    return records;
+  }
 
 }
