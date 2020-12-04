@@ -15,6 +15,7 @@ public abstract class MapReduce <K1, V1,
     
   private String inputName;
   private String outputName;
+  private Integer buffSize;
   
   public void setInputName(String n) {
     if (inputName != null) {
@@ -36,6 +37,17 @@ public abstract class MapReduce <K1, V1,
   
   public String getOutputName() {
     return outputName;
+  }
+  
+  public void setBuffSize(Integer s) {
+    if (buffSize != null) {
+      throw new IllegalStateException("setBuffSize was already called");
+    }
+    buffSize = Objects.requireNonNull(s);
+  }
+  
+  public Integer getBuffSize() {
+    return buffSize;
   }
   
   public void preMap(RecordWriter<K2, V2> w) throws IOException {};

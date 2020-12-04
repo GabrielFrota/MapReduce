@@ -63,24 +63,30 @@ class Master implements Callable<Integer> {
     }  
   }
   
+  private final String fileLabel = "FILE_PATH";
+  
   @Option(names = {"-i", "--input"}, description = "Input file path.", 
-      paramLabel = "FILE", required = true)
+      paramLabel = fileLabel, required = true)
   private File input;
 
   @Option(names = {"-o", "--output"}, description = "Output file path.", 
-      paramLabel = "FILE", required = true)
+      paramLabel = fileLabel, required = true)
   private File output;
 
   @Option(names = {"-w", "--workers"}, description = "Workers IP addresses file path.", 
-      paramLabel = "FILE", required = true)
+      paramLabel = fileLabel, required = true)
   private File workersFile;
   
-  @Option(names = {"-mp", "--mapreduce"}, description = "MapReduce implementation class file path.", 
-      paramLabel = "FILE", required = true)
+  @Option(names = {"-m", "--mapreduce"}, description = "MapReduce implementation class file path.", 
+      paramLabel = fileLabel, required = true)
   private File mapReduceFile;
   
   @Option(names = {"-ov", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
+  
+  @Option(names = {"-b", "--buffersize"}, description = "In-memory Record buffer size.",
+      paramLabel = "INT_VAL")
+  private Integer buffSize;
     
   private final static CommandLine comm = new CommandLine(new Master());
   
@@ -116,10 +122,6 @@ class Master implements Callable<Integer> {
     for (var p : params.entrySet()) {
       if (!checkExistsCanRead(p.getKey(), p.getValue()))
         return -1;
-    }
-    if (output.exists()) {
-      printErr("Invalid --output parameter value. A path to a non existing file is required.");
-      return -1;
     }
     
     var remapperIn = new HashMap<String, String>();
@@ -174,6 +176,8 @@ class Master implements Callable<Integer> {
     }
     mapRed.setInputName(input.getName());
     mapRed.setOutputName(output.getName());
+    if (buffSize != null)
+      mapRed.setBuffSize(buffSize); //HERE
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));

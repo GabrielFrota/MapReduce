@@ -19,12 +19,23 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
   private String prefix;
   private ArrayList<Record<K, V>>[] parts;
   private LinkedList<File>[] spills;
-  //private int GOOD_SIZE = 10000000;
-  private int MAX_SIZE = 10;
+  private int MAX_SIZE = 10000000;
      
   @SuppressWarnings("unchecked")
   public PartitionWriter(String prefix, int numPartitions) throws IOException {
     this.prefix = prefix;
+    parts = new ArrayList[numPartitions];
+    spills = new LinkedList[numPartitions];
+    for (int i = 0; i < numPartitions; i++) {
+      parts[i] = new ArrayList<Record<K, V>>(MAX_SIZE);
+      spills[i] = new LinkedList<File>();
+    }
+  }
+  
+  @SuppressWarnings("unchecked")
+  public PartitionWriter(String prefix, int numPartitions, int buffSize) throws IOException {
+    this.prefix = prefix;
+    MAX_SIZE = buffSize;
     parts = new ArrayList[numPartitions];
     spills = new LinkedList[numPartitions];
     for (int i = 0; i < numPartitions; i++) {
