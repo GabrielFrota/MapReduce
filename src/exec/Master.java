@@ -77,14 +77,14 @@ class Master implements Callable<Integer> {
       paramLabel = fileLabel, required = true)
   private File workersFile;
   
-  @Option(names = {"-m", "--mapreduce"}, description = "MapReduce implementation class file path.", 
+  @Option(names = {"-mr", "--mapreduce"}, description = "MapReduce implementation class file path.", 
       paramLabel = fileLabel, required = true)
   private File mapReduceFile;
   
   @Option(names = {"-ov", "--overwrite"}, description = "Overwrite splits in Workers.")
   private boolean overwrite;
   
-  @Option(names = {"-b", "--buffersize"}, description = "In-memory Record buffer size.",
+  @Option(names = {"-bs", "--buffersize"}, description = "In-memory Record buffer size.",
       paramLabel = "INT_VAL")
   private Integer buffSize;
     
@@ -177,7 +177,7 @@ class Master implements Callable<Integer> {
     mapRed.setInputName(input.getName());
     mapRed.setOutputName(output.getName());
     if (buffSize != null)
-      mapRed.setBuffSize(buffSize); //HERE
+      mapRed.setBufferSize(buffSize); //HERE
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
@@ -252,19 +252,28 @@ class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    } 
+    }
+//    var combine = mapRed.getClass().getMethod("combine");
+    
+//    if (combine.getDeclaringClass() == MapReduce.class) {
+//      var writer = new ObjectOutputStream(new FileOutputStream(outputFile));
+//      
+//    } else {
+//      
+//    }
+    var outputFile = new File(mapRed.getOutputName());
     var recordReader = new PartitionReader(chunksToGather);
-    var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getOutputName()));
+    var recordWriter = mapRed.getOutputFormat().getRecordWriter(outputFile);
     mapRed.preCombine(recordWriter);
     while (recordReader.readOneAndAdvance()) {
       mapRed.combine(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
     }
     mapRed.postCombine(recordWriter);
     recordReader.close();
-    recordWriter.close(); 
+    recordWriter.close();
+    
     var finish = Instant.now();
     Files.delete(tempFileFullPath);
-    
     out.println("MapReduce done. Execution time was " 
         + Duration.between(start, finish).toSeconds() + " seconds");
     return 0;

@@ -109,7 +109,10 @@ class Worker implements Callable<Integer> {
       var in = new File(mapRed.getInputName());
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
-      var recordWriter = new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
+      var recordWriter = mapRed.getBufferSize() != null
+          ? new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size(), mapRed.getBufferSize())
+          : new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
+          
       mapRed.preMap(recordWriter);
       while (recordReader.readOneAndAdvance()) {
         mapRed.map(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);

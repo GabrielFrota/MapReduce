@@ -15,7 +15,7 @@ public abstract class MapReduce <K1, V1,
     
   private String inputName;
   private String outputName;
-  private Integer buffSize;
+  private Integer bufferSize;
   
   public void setInputName(String n) {
     if (inputName != null) {
@@ -39,15 +39,15 @@ public abstract class MapReduce <K1, V1,
     return outputName;
   }
   
-  public void setBuffSize(Integer s) {
-    if (buffSize != null) {
+  public void setBufferSize(Integer s) {
+    if (bufferSize != null) {
       throw new IllegalStateException("setBuffSize was already called");
     }
-    buffSize = Objects.requireNonNull(s);
+    bufferSize = Objects.requireNonNull(s);
   }
   
-  public Integer getBuffSize() {
-    return buffSize;
+  public Integer getBufferSize() {
+    return bufferSize;
   }
   
   public void preMap(RecordWriter<K2, V2> w) throws IOException {};
@@ -67,10 +67,6 @@ public abstract class MapReduce <K1, V1,
   
   public abstract void reduce(K2 k, Iterable<V2> values, RecordWriter<K3, V3> w) throws IOException;
   
-  public void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException {
-    for (var v : values) {
-      w.write(k, v);
-    }
-  }
-  
+  public void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException {};
+    
 }
