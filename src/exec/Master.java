@@ -47,7 +47,7 @@ class Master implements Callable<Integer> {
     private static final long serialVersionUID = 1L;
 
     public MasterRemoteImpl() throws RemoteException {
-      super(1100);
+      super(1099);
     }
     
     @Override
@@ -161,11 +161,11 @@ class Master implements Callable<Integer> {
       System.setProperty("java.rmi.server.codebase", "http://" + addr + ":8080/");
     }
     var impl = new MasterRemoteImpl();
-    var reg = LocateRegistry.createRegistry(1100);
+    var reg = LocateRegistry.createRegistry(1099);
     reg.bind(MasterRemote.NAME, impl);
     out.println("RMI Registry is binded to address " 
         + System.getProperty("java.rmi.server.hostname") 
-        + ":1100 exporting MasterRemote interface.");
+        + ":1099 exporting MasterRemote interface.");
     
     var workers = Files.readAllLines(workersFile.toPath());
     for (var ip : workers) {
