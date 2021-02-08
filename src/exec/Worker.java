@@ -43,17 +43,11 @@ class Worker implements Callable<Integer> {
       return System.getProperty("java.rmi.server.hostname");
     }
     
-    private String masterIp;
-    @Override
-    public void setMasterIp(String ip) throws RemoteException {
-      masterIp = ip;
-    }
-    
     @SuppressWarnings("rawtypes")
     private MapReduce mapRed;
     @Override
-    public void downloadImpl() throws RemoteException, NotBoundException {
-      var reg = LocateRegistry.getRegistry(masterIp, 1100);
+    public void downloadImpl(String ip) throws RemoteException, NotBoundException {
+      var reg = LocateRegistry.getRegistry(ip, 1099);
       var master = (MasterRemote) reg.lookup(MasterRemote.NAME);
       mapRed = master.getMapReduceImpl();
     }

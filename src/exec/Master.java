@@ -180,8 +180,7 @@ class Master implements Callable<Integer> {
       mapRed.setBufferSize(buffSize); //HERE
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
-      worker.setMasterIp(System.getProperty("java.rmi.server.hostname"));
-      worker.downloadImpl();
+      worker.downloadImpl(System.getProperty("java.rmi.server.hostname"));
     }
     
     var text = mapRed.getInputFormat();
