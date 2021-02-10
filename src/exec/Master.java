@@ -230,7 +230,7 @@ class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
-    var chunkName = mapRed.getInputName() + "redout.0";
+    var chunkName = mapRed.getInputName() + ".redout.0";
     var chunksToGather = new LinkedList<File>();
     for (var ip : mapRed.workers) {
       var t = pool.submit(() -> {
