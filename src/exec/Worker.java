@@ -22,11 +22,12 @@ import interf.MapReduce;
 import lib.CommandLine;
 import lib.CommandLine.Command;
 
-@Command(name = "core/Worker", mixinStandardHelpOptions = true, 
-  description = "Worker proccess for distributed MapReduce jobs in a cluster.")
+@Command(name = "exec/Worker", mixinStandardHelpOptions = true, 
+  description = "Worker process for MapReduce.")
 class Worker implements Callable<Integer> {
     
-  private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {   
+  private class WorkerRemoteImpl extends UnicastRemoteObject implements WorkerRemote {
+   
     private static final long serialVersionUID = 1L;
 
     public WorkerRemoteImpl() throws RemoteException {
@@ -103,9 +104,10 @@ class Worker implements Callable<Integer> {
       var in = new File(mapRed.getInputName());
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
+      var outName = mapRed.getInputName() + ".mapout";
       var recordWriter = mapRed.getBufferSize() != null
-          ? new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size(), mapRed.getBufferSize())
-          : new PartitionWriter(mapRed.getInputName() + ".mapout", mapRed.workers.size());
+          ? new PartitionWriter(outName, mapRed.workers.size(), mapRed.getBufferSize())
+          : new PartitionWriter(outName, mapRed.workers.size());
           
       mapRed.preMap(recordWriter);
       while (recordReader.readOneAndAdvance()) {
@@ -153,7 +155,9 @@ class Worker implements Callable<Integer> {
     @Override
     public void doReduce() throws RemoteException, IOException, ClassNotFoundException {   
       var recordReader = new PartitionReader(chunks);
-      var recordWriter = new PartitionWriter(mapRed.getOutputName(), 1);
+      var outName = mapRed.getInputName() + ".redout";
+      var recordWriter = new PartitionWriter(outName, 1);
+      
       mapRed.preReduce(recordWriter);
       while (recordReader.readOneAndAdvance()) {
         mapRed.reduce(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
@@ -177,8 +181,8 @@ class Worker implements Callable<Integer> {
     var reg = LocateRegistry.createRegistry(1099);
     var ip = System.getProperty("java.rmi.server.hostname");
     reg.bind(WorkerRemote.NAME, impl);
-    System.out.println("RMI Registry is binded to address " + ip + ":1099 exporting WorkerRemote interface.\n"
-        + "Type \"quit\" to stop the server and close the JVM.");
+    System.out.println("RMI Registry is bound to address " + ip + ":1099 exporting WorkerRemote interface.\n"
+        + "Type \"quit\" to stop the process and close the JVM.");
 
     try (var scan = new Scanner(System.in)) {
       while (!scan.nextLine().equals("quit"));

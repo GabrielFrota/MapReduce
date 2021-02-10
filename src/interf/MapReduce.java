@@ -67,6 +67,10 @@ public abstract class MapReduce <K1, V1,
   
   public abstract void reduce(K2 k, Iterable<V2> values, RecordWriter<K3, V3> w) throws IOException;
   
-  public void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException {};
+  public void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException {
+    for (var v : values) {
+      w.write(k, v);
+    }
+  };
     
 }

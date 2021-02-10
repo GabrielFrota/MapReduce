@@ -35,11 +35,11 @@ public class ClassFileServer extends ClassServer {
     {
        super(port);
        this.classpath = classpath;
-       System.out.println("Printing list of root directory of ClassFileServer:");
+       System.out.println("Printing directory traversal of ClassFileServer:");
        for (var s : new File(classpath).list()) {
           System.out.println(s);
        }
-       System.out.println("==========");
+       System.out.println("====================");
     }
 
     /**

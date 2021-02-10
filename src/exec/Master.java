@@ -35,8 +35,8 @@ import lib.CommandLine;
 import lib.CommandLine.Command;
 import lib.CommandLine.Option;
 
-@Command(name = "core/Master", mixinStandardHelpOptions = false, 
-    description = "Master proccess for distributed MapReduce jobs in a cluster.")
+@Command(name = "exec/Master", mixinStandardHelpOptions = false, 
+    description = "Master process for MapReduce.")
 class Master implements Callable<Integer> {
   
   private String timestamp = "_" + LocalDateTime.now().toString().replace(".", "_");
@@ -163,7 +163,7 @@ class Master implements Callable<Integer> {
     var impl = new MasterRemoteImpl();
     var reg = LocateRegistry.createRegistry(1099);
     reg.bind(MasterRemote.NAME, impl);
-    out.println("RMI Registry is binded to address " 
+    out.println("RMI Registry is bound to address " 
         + System.getProperty("java.rmi.server.hostname") 
         + ":1099 exporting MasterRemote interface.");
     
@@ -230,7 +230,7 @@ class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
-    var chunkName = mapRed.getOutputName() + ".0";
+    var chunkName = mapRed.getInputName() + "redout.0";
     var chunksToGather = new LinkedList<File>();
     for (var ip : mapRed.workers) {
       var t = pool.submit(() -> {
@@ -251,18 +251,9 @@ class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }
-//    var combine = mapRed.getClass().getMethod("combine");
-    
-//    if (combine.getDeclaringClass() == MapReduce.class) {
-//      var writer = new ObjectOutputStream(new FileOutputStream(outputFile));
-//      
-//    } else {
-//      
-//    }
-    var outputFile = new File(mapRed.getOutputName());
-    var recordReader = new PartitionReader(chunksToGather);
-    var recordWriter = mapRed.getOutputFormat().getRecordWriter(outputFile);
+    }    
+    var recordReader = new PartitionReader(chunksToGather);  
+    var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getOutputName()));
     mapRed.preCombine(recordWriter);
     while (recordReader.readOneAndAdvance()) {
       mapRed.combine(recordReader.getCurrentKey(), recordReader.getCurrentValue(), recordWriter);
