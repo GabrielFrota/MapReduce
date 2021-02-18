@@ -15,7 +15,7 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
 
   @Override
   public InputFormat<Long, String> getInputFormat() {
-    return new TextInputFormat();
+    return new TextInputFormat();3
   }
   
   @Override
@@ -34,6 +34,8 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
     }
     w.write(k, cnt);
   }
+  
+  
 
   @Override
   public OutputFormat<Integer, Integer> getOutputFormat() {
