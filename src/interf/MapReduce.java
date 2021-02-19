@@ -8,7 +8,8 @@ import java.util.Objects;
 
 public abstract class MapReduce <K1, V1, 
                                  K2 extends Comparable<K2> & Serializable, V2 extends Serializable,
-                                 K3 extends Comparable<K3> & Serializable, V3 extends Serializable> 
+                                 K3 extends Comparable<K3> & Serializable, V3 extends Serializable,
+                                 K4, V4> 
   implements Serializable {
   
   private static final long serialVersionUID = 1L;
@@ -54,19 +55,19 @@ public abstract class MapReduce <K1, V1,
   public void postMap(RecordWriter<K2, V2> w) throws IOException {};
   public void preReduce(RecordWriter<K3, V3> w) throws IOException {};
   public void postReduce(RecordWriter<K3, V3> w) throws IOException {};
-  public void preCombine(RecordWriter<K3, V3> w) throws IOException {};
-  public void postCombine(RecordWriter<K3, V3> w) throws IOException {};
+  public void preCombine(RecordWriter<K4, V4> w) throws IOException {};
+  public void postCombine(RecordWriter<K4, V4> w) throws IOException {};
   
   public final List<String> workers = new ArrayList<String>();
     
   public abstract InputFormat<K1, V1> getInputFormat();
   
-  public abstract OutputFormat<K3, V3> getOutputFormat();
+  public abstract OutputFormat<K4, V4> getOutputFormat();
   
   public abstract void map(K1 k, V1 v, RecordWriter<K2, V2> w) throws IOException;
   
   public abstract void reduce(K2 k, Iterable<V2> values, RecordWriter<K3, V3> w) throws IOException;
   
-  public abstract void combine(K3 k, Iterable<V3> values, RecordWriter<K3, V3> w) throws IOException;
+  public abstract void combine(K3 k, Iterable<V3> values, RecordWriter<K4, V4> w) throws IOException;
     
 }

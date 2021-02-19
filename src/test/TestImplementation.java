@@ -9,13 +9,13 @@ import interf.MapReduce;
 import interf.OutputFormat;
 import interf.RecordWriter;
 
-public class TestImplementation extends MapReduce<Long, String, Integer, Integer, Integer, Integer> {
+public class TestImplementation extends MapReduce<Long, String, Integer, Integer, Integer, Integer, Integer, Integer> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
   public InputFormat<Long, String> getInputFormat() {
-    return new TextInputFormat();3
+    return new TextInputFormat();
   }
   
   @Override
@@ -40,6 +40,15 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
   @Override
   public OutputFormat<Integer, Integer> getOutputFormat() {
     return new TextOutputFormat<Integer, Integer>();
+  }
+
+  @Override
+  public void combine(Integer k, Iterable<Integer> values, RecordWriter<Integer, Integer> w) throws IOException {
+    int sum = 0;
+    for (var v : values) {
+      sum += v;
+    }
+    w.write(k, sum);
   }
   
 }

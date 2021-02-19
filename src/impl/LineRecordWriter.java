@@ -4,12 +4,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Serializable;
 
 import interf.RecordWriter;
 
-public class LineRecordWriter<K extends Comparable<K> & Serializable, V extends Serializable> 
-  implements RecordWriter<K, V> {
+public class LineRecordWriter<K, V> implements RecordWriter<K, V> {
   
   private BufferedWriter writer;
 
