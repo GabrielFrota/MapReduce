@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -133,28 +132,23 @@ class Master implements Callable<Integer> {
                         String superName, String[] interfaces) {
         if (!remapperIn.isEmpty()) 
           return;
-        var strs = name.split("/");
-        strs[strs.length - 1] = timestamp;
-        var sj = new StringJoiner("/");
-        for (var s : strs) 
-          sj.add(s);
-        remapperIn.put(name, sj.toString());
+        remapperIn.put(name, timestamp);
       }
     }, 0);
     var cw = new ClassWriter(0);
     var re = new ClassRemapper(cw, new SimpleRemapper(remapperIn));
     cr.accept(re, 0);
-    var tempFilePath = remapperIn.values().iterator().next() + ".class";
-    var tempFileFullPath = Paths.get("bin/" + tempFilePath);
+    var tempFile = remapperIn.values().iterator().next() + ".class";
+    var tempFilePath = Paths.get(tempFile);
     byte[] bClazz = cw.toByteArray(); 
-    Files.write(tempFileFullPath, bClazz, StandardOpenOption.CREATE);
-    var clazzName = tempFilePath.split("\\.")[0].replace("/", ".");
+    Files.write(tempFilePath, bClazz);
+    var clazzName = tempFile.split("\\.")[0].replace("/", ".");
     var clazz = new MasterClassLoader().loadClass(clazzName, bClazz);
     mapRed = (MapReduce) clazz.getDeclaredConstructor().newInstance();
     
     var out = comm.getOut();
     @SuppressWarnings("unused")
-    var fileServer = new ClassFileServer(8080, "./bin");  
+    var fileServer = new ClassFileServer(8080, ".");  
     try (var sock = new Socket("www.google.com", 80)) {
       var addr = sock.getLocalAddress().getHostAddress();
       System.setProperty("java.rmi.server.hostname", addr);
@@ -264,7 +258,7 @@ class Master implements Callable<Integer> {
     recordWriter.close();
     
     var finish = Instant.now();
-    Files.delete(tempFileFullPath);
+    Files.delete(tempFilePath);
     out.println("MapReduce done. Execution time was " 
         + Duration.between(start, finish).toSeconds() + " seconds");
     return 0;
