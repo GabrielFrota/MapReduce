@@ -45,9 +45,9 @@ interface WorkerRemote extends Remote {
   
   // MapReduce steps
   
-  void doMap(int myIndex) throws RemoteException, IOException;
+  void doMap(int index) throws RemoteException, IOException;
   
-  void gatherChunks(int myIndex) throws RemoteException, IOException, NotBoundException;
+  void gatherChunks(int index) throws RemoteException, IOException, NotBoundException;
   
   void doReduce() throws RemoteException, IOException, ClassNotFoundException;
   

@@ -100,8 +100,8 @@ class Worker implements Callable<Integer> {
         
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void doMap(int myIndex) throws RemoteException, IOException {
-      var in = new File(mapRed.getInputName() + "." + myIndex);
+    public void doMap(int index) throws RemoteException, IOException {
+      var in = new File(mapRed.getInputName() + "." + index);
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var outName = mapRed.getInputName() + ".mapout";
@@ -121,9 +121,9 @@ class Worker implements Callable<Integer> {
     private Iterable<File> chunks;
     
     @Override
-    public void gatherChunks(int myIndex) throws RemoteException, IOException, NotBoundException {
+    public void gatherChunks(int index) throws RemoteException, IOException, NotBoundException {
       var myIp = System.getProperty("java.rmi.server.hostname");
-      var myChunkName = mapRed.getInputName() + ".mapout." + myIndex;
+      var myChunkName = mapRed.getInputName() + ".mapout." + index;
       var chunksFromPartition = new LinkedList<File>();
       for (int i = 0; i < mapRed.workers.size() - 1; i++) {
         chunksFromPartition.add(new File(myChunkName + "." + i));
