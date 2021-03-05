@@ -171,13 +171,13 @@ class Master implements Callable<Integer> {
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       if (!worker.getOK().equals("OK"))
-        throw new RuntimeException("Host " + ip + " did not answered properly.");
+        throw new RuntimeException("Host " + ip + " did not answer properly.");
       mapRed.workers.add(ip);
     }
     mapRed.setInputName(input.getName());
     mapRed.setOutputName(output.getName());
     if (buffSize != null)
-      mapRed.setBufferSize(buffSize); //HERE
+      mapRed.setBufferSize(buffSize); 
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       worker.downloadImpl(System.getProperty("java.rmi.server.hostname"));
@@ -185,17 +185,18 @@ class Master implements Callable<Integer> {
     
     var text = mapRed.getInputFormat();
     var splits = text.getSplits(input, mapRed.workers.size());
-    int i = 0;
-    for (var s : splits) {
-      var worker = getWorkerRemote(workers.get(i++));
-      boolean exists = worker.exists(mapRed.getInputName());
-      if (!exists || overwrite) {
-        if (exists) worker.delete(mapRed.getInputName());
-        worker.createNewFile(mapRed.getInputName());
-        out.println("Sending " + s + " to worker " + worker.getIp());      
-        var inStream = Files.newInputStream(s.toPath(), StandardOpenOption.READ);
+    for (var ip : workers) {
+      var worker = getWorkerRemote(ip);
+      var file = splits[workers.indexOf(ip)];
+      var name = file.getName();
+      if (overwrite) worker.delete(name);
+      boolean exists = worker.exists(name);
+      if (!exists) {
+        worker.createNewFile(name);
+        out.println("Sending " + name + " to worker " + worker.getIp());      
+        var inStream = Files.newInputStream(file.toPath(), StandardOpenOption.READ);
         byte[] buf = new byte[WorkerRemote.CHUNK_LENGTH];
-        worker.initOutputStream(mapRed.getInputName());
+        worker.initOutputStream(name);
         for (int len = inStream.read(buf); len != -1; len = inStream.read(buf)) {
           worker.write(buf, len);
         }
@@ -209,7 +210,7 @@ class Master implements Callable<Integer> {
     for (var ip : workers) {
       var t = pool.submit(() -> {
         var worker = getWorkerRemote(ip);
-        worker.doMap();
+        worker.doMap(mapRed.workers.indexOf(ip));
         return 0;
       });
       tasks.add(t);

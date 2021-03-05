@@ -100,8 +100,8 @@ class Worker implements Callable<Integer> {
         
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void doMap() throws RemoteException, IOException {
-      var in = new File(mapRed.getInputName());
+    public void doMap(int myIndex) throws RemoteException, IOException {
+      var in = new File(mapRed.getInputName() + "." + myIndex);
       var inputFormat = mapRed.getInputFormat();
       var recordReader = inputFormat.getRecordReader(in);
       var outName = mapRed.getInputName() + ".mapout";
@@ -132,7 +132,7 @@ class Worker implements Callable<Integer> {
       for (int i = 0; i < mapRed.workers.size(); i++) {
         var ip = (String) mapRed.workers.get(i);
         if (!ip.equals(myIp)) {
-          var reg = LocateRegistry.getRegistry((String) ip);
+          var reg = LocateRegistry.getRegistry((String)ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
           var path = chunksFromPartition.getFirst().toPath();
           Collections.rotate(chunksFromPartition, -1);
