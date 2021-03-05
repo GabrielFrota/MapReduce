@@ -86,8 +86,8 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
   
   private ForkJoinTask<Integer> task;
   private ObjectOutputStream out;
-  private void spill(int i) throws IOException 
-  {
+  
+  private void spill(int i) throws IOException {
     if (parts[i].size() == 0)
       return;
     if (task != null) {
