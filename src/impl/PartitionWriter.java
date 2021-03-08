@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -34,8 +33,8 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
   
   @SuppressWarnings("unchecked")
   public PartitionWriter(String prefix, int numPartitions, int size) throws IOException {
-    this.prefix = prefix;
     sizeMax = size;
+    this.prefix = prefix;  
     parts = new ArrayList[numPartitions];
     spills = new LinkedList[numPartitions];
     for (int i = 0; i < numPartitions; i++) {
@@ -62,7 +61,7 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
       var out = new ObjectOutputStream(new FileOutputStream(fileName));
       
       if (spills[i].size() == 0) {
-        Collections.sort(parts[i]);
+        parts[i].sort((r1, r2) -> r1.compareTo(r2));
         for (var rec : parts[i]) {
           out.writeObject(rec);
         }
@@ -107,8 +106,8 @@ public class PartitionWriter <K extends Comparable<K> & Serializable, V extends 
     spills[i].add(file);
     
     out = new ObjectOutputStream(new FileOutputStream(file));      
-    task = ForkJoinPool.commonPool().submit(() -> {          
-      Collections.sort(part); 
+    task = ForkJoinPool.commonPool().submit(() -> {
+      part.sort((r1, r2) -> r1.compareTo(r2));
       for (var rec : part) {
         out.writeObject(rec);
       }
