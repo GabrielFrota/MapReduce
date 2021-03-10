@@ -177,15 +177,14 @@ class Master implements Callable<Integer> {
       worker.downloadImpl(System.getProperty("java.rmi.server.hostname"));
     }
     
-    var text = mapRed.getInputFormat();
-    var splits = text.getSplits(input, mapRed.workers.size());
+    var splits = mapRed.getInputFormat()
+        .getSplits(input, mapRed.workers.size());
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       var file = splits[workers.indexOf(ip)];
       var name = file.getName();
       if (overwrite) worker.delete(name);
-      boolean exists = worker.exists(name);
-      if (!exists) {
+      if (!worker.exists(name)) {
         worker.createNewFile(name);
         out.println("Sending " + name + " to worker " + worker.getIp());      
         var inStream = Files.newInputStream(file.toPath(), StandardOpenOption.READ);
@@ -225,6 +224,7 @@ class Master implements Callable<Integer> {
     for (var t : tasks) {
       t.get();
     }
+    tasks.clear();
     var chunkName = mapRed.getInputName() + ".redout.0";
     var chunksToGather = new LinkedList<File>();
     for (var ip : mapRed.workers) {
