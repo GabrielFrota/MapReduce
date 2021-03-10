@@ -132,7 +132,7 @@ class Worker implements Callable<Integer> {
       for (int i = 0; i < mapRed.workers.size(); i++) {
         var ip = (String) mapRed.workers.get(i);
         if (!ip.equals(myIp)) {
-          var reg = LocateRegistry.getRegistry((String)ip);
+          var reg = LocateRegistry.getRegistry((String) ip);
           var worker = (WorkerRemote) reg.lookup(WorkerRemote.NAME);
           var path = chunksFromPartition.getFirst().toPath();
           Collections.rotate(chunksFromPartition, -1);
