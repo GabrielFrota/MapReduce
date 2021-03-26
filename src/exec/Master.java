@@ -201,11 +201,12 @@ class Master implements Callable<Integer> {
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
-      var t = pool.submit(() -> {
+      Callable c = () -> {
         var worker = getWorkerRemote(ip);
         worker.doMap(mapRed.workers.indexOf(ip));
         return 0;
-      });
+      };
+      var t = pool.submit(c);
       tasks.add(t);
     }
     for (var t : tasks) {
@@ -214,12 +215,13 @@ class Master implements Callable<Integer> {
     tasks.clear();
     
     for (var ip : mapRed.workers) {
-      var t = pool.submit(() -> {
+      Callable c = () -> {
         var worker = getWorkerRemote((String) ip);
         worker.gatherChunks(mapRed.workers.indexOf(ip));
         worker.doReduce();
         return 0;
-      });
+      };
+      var t = pool.submit(c);
       tasks.add(t);
     }
     for (var t : tasks) {
@@ -230,7 +232,7 @@ class Master implements Callable<Integer> {
     var chunkName = mapRed.getInputName() + ".redout.0";
     var chunksToGather = new LinkedList<File>();
     for (var ip : mapRed.workers) {
-      var t = pool.submit(() -> {
+      Callable c = () -> {
         var worker = getWorkerRemote((String) ip);
         chunksToGather.add(new File(chunkName + "." + ip));
         var output = Files.newOutputStream(chunksToGather.getLast().toPath());
@@ -243,7 +245,8 @@ class Master implements Callable<Integer> {
         worker.closeInputStream();
         output.close();
         return 0;
-      });
+      };
+      var t = pool.submit(c);
       tasks.add(t);
     }
     for (var t : tasks) {
