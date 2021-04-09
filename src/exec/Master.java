@@ -251,7 +251,8 @@ class Master implements Callable<Integer> {
     }
     for (var t : tasks) {
       t.get();
-    }    
+    }
+    
     var recordReader = new PartitionReader(chunksToGather);  
     var recordWriter = mapRed.getOutputFormat().getRecordWriter(new File(mapRed.getOutputName()));
     mapRed.preCombine(recordWriter);
@@ -265,7 +266,8 @@ class Master implements Callable<Integer> {
     var finish = Instant.now();
     Files.delete(tempFilePath);
     out.println("MapReduce done. Execution time was " 
-        + Duration.between(start, finish).toSeconds() + " seconds");
+        + Duration.between(start, finish).toSeconds() 
+        + " seconds");
     return 0;
   }
 
