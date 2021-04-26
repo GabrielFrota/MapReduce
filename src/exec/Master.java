@@ -177,8 +177,7 @@ class Master implements Callable<Integer> {
       worker.downloadImpl(System.getProperty("java.rmi.server.hostname"));
     }
     
-    var splits = mapRed.getInputFormat()
-        .getSplits(input, mapRed.workers.size());
+    var splits = mapRed.getInputFormat().getSplits(input, mapRed.workers.size());
     for (var ip : workers) {
       var worker = getWorkerRemote(ip);
       var file = splits[workers.indexOf(ip)];

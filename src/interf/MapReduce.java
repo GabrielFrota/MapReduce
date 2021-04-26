@@ -3,7 +3,6 @@ package interf;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public abstract class MapReduce <K1, V1, 
@@ -51,6 +50,8 @@ public abstract class MapReduce <K1, V1,
     return bufferSize;
   }
   
+  public final ArrayList<String> workers = new ArrayList<>();
+  
   public void preMap(RecordWriter<K2, V2> w) throws IOException {};
   public void postMap(RecordWriter<K2, V2> w) throws IOException {};
   public void preReduce(RecordWriter<K3, V3> w) throws IOException {};
@@ -58,8 +59,6 @@ public abstract class MapReduce <K1, V1,
   public void preCombine(RecordWriter<K4, V4> w) throws IOException {};
   public void postCombine(RecordWriter<K4, V4> w) throws IOException {};
   
-  public final List<String> workers = new ArrayList<String>();
-    
   public abstract InputFormat<K1, V1> getInputFormat();
   
   public abstract OutputFormat<K4, V4> getOutputFormat();
