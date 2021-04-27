@@ -193,6 +193,7 @@ class Master implements Callable<Integer> {
           worker.write(buf, len);
         }
         worker.closeOutputStream();
+        inStream.close();
       }
     }
     
