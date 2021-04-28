@@ -197,7 +197,8 @@ class Master implements Callable<Integer> {
       }
     }
     
-    var start = Instant.now();
+    out.println("MapReduce steps starting");
+    var start = Instant.now();   
     var pool = ForkJoinPool.commonPool();
     var tasks = new LinkedList<ForkJoinTask<Integer>>();
     for (var ip : workers) {
@@ -257,9 +258,8 @@ class Master implements Callable<Integer> {
     
     var finish = Instant.now();
     Files.delete(tempFilePath);
-    out.println("MapReduce done. Execution time was " 
-        + Duration.between(start, finish).toSeconds() 
-        + " seconds");
+    out.println("MapReduce steps done \n"  
+        + "Execution time was " + Duration.between(start, finish).toSeconds() + " seconds");
     return 0;
   }
 
