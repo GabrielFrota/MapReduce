@@ -214,9 +214,9 @@ class Master implements Callable<Integer> {
     }
     tasks.clear();
     
-    for (var ip : mapRed.workers) {
+    for (var ip : workers) {
       Callable c = () -> {
-        var worker = getWorkerRemote((String) ip);
+        var worker = getWorkerRemote(ip);
         worker.gatherChunks(mapRed.workers.indexOf(ip));
         worker.doReduce();
         return 0;
@@ -231,26 +231,18 @@ class Master implements Callable<Integer> {
     
     var chunkName = mapRed.getInputName() + ".redout.0";
     var chunksToGather = new LinkedList<File>();
-    for (var ip : mapRed.workers) {
-      Callable c = () -> {
-        var worker = getWorkerRemote((String) ip);
-        chunksToGather.add(new File(chunkName + "." + ip));
-        var output = Files.newOutputStream(chunksToGather.getLast().toPath());
-        worker.initInputStream(chunkName);
-        for (byte[] bytes = worker.read(WorkerRemote.CHUNK_LENGTH); 
-             bytes.length != 0;
-             bytes = worker.read(WorkerRemote.CHUNK_LENGTH)) {
-          output.write(bytes);
-        }
-        worker.closeInputStream();
-        output.close();
-        return 0;
-      };
-      var t = pool.submit(c);
-      tasks.add(t);
-    }
-    for (var t : tasks) {
-      t.get();
+    for (var ip : workers) {
+      var worker = getWorkerRemote(ip);
+      chunksToGather.add(new File(chunkName + "." + ip));
+      var output = Files.newOutputStream(chunksToGather.getLast().toPath());
+      worker.initInputStream(chunkName);
+      for (byte[] bytes = worker.read(WorkerRemote.CHUNK_LENGTH); 
+           bytes.length != 0;
+           bytes = worker.read(WorkerRemote.CHUNK_LENGTH)) {
+        output.write(bytes);
+      }
+      worker.closeInputStream();
+      output.close();
     }
     
     var recordReader = new PartitionReader(chunksToGather);  
