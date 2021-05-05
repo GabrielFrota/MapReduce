@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -198,9 +198,9 @@ class Master implements Callable<Integer> {
     }
     
     out.println("MapReduce steps starting");
-    var start = Instant.now();   
-    var pool = ForkJoinPool.commonPool();
-    var tasks = new LinkedList<ForkJoinTask<Integer>>();
+    var start = Instant.now(); 
+    var pool = Executors.newFixedThreadPool(workers.size());
+    var tasks = new LinkedList<Future<Integer>>();
     for (var ip : workers) {
       Callable c = () -> {
         var worker = getWorkerRemote(ip);
