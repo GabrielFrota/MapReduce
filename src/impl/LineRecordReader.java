@@ -35,7 +35,7 @@ class LineRecordReader implements RecordReader<Long, String> {
     currentValue = reader.readLine();
     if (currentValue == null) 
       return false;
-    cnt += currentValue.getBytes().length;
+    cnt += currentValue.getBytes().length + 1;
     return true;
   }
 

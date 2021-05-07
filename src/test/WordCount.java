@@ -23,6 +23,16 @@ public class WordCount {
     for (var en : map.entrySet()) {
       System.out.println(en.getKey() + "\t" + en.getValue());
     }
+    
+//    int key = 0;
+//    int value = 0;
+//    for (var en : map.entrySet()) {
+//      if (en.getValue() > value) {
+//        value = en.getValue();
+//        key = en.getKey();
+//      }
+//    }
+//    System.out.println(key + "\t" + value);
   }
   
 }
