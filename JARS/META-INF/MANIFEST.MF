@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: asm-9.0.jar asm-commons-9.0.jar asm-util-9.0.jar
-Created-By: 11.0.11 (Ubuntu)
-
