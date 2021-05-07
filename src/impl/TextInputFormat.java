@@ -27,7 +27,7 @@ public class TextInputFormat implements InputFormat<Long, String> {
         if (line == null) 
           break;
         writer.println(line);
-        cnt += line.getBytes().length;
+        cnt += line.getBytes().length + 1;
       }
       splits[i] = file;
       writer.close();

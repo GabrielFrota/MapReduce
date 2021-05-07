@@ -8,12 +8,12 @@ import java.io.IOException;
 
 import interf.RecordReader;
 
-class LineRecordReader implements RecordReader<Long, String> {
+public class LineRecordReader implements RecordReader<Long, String> {
   
-  private BufferedReader reader;
-  private Long currentKey;
-  private String currentValue;
-  private long cnt;
+  protected BufferedReader reader;
+  protected Long currentKey;
+  protected String currentValue;
+  protected long cnt;
   
   public LineRecordReader(File in) throws FileNotFoundException {
     reader = new BufferedReader(new FileReader(in));

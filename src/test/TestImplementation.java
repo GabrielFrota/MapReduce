@@ -1,6 +1,7 @@
 package test;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import impl.TextInputFormat;
 import impl.TextOutputFormat;
@@ -9,7 +10,7 @@ import interf.MapReduce;
 import interf.OutputFormat;
 import interf.RecordWriter;
 
-public class TestImplementation extends MapReduce<Long, String, Integer, Integer, Integer, Integer, Integer, Integer> {
+public class TestImplementation extends MapReduce<Long, String, String, Long, String, LinkedList<Long>, String, LinkedList<Long>> {
 
   private static final long serialVersionUID = 1L;
 
@@ -19,36 +20,28 @@ public class TestImplementation extends MapReduce<Long, String, Integer, Integer
   }
   
   @Override
-  public void map(Long k, String v, RecordWriter<Integer, Integer> w) throws IOException {
-    var strs = v.split(",");
-    for (var s : strs) {
-      w.write(Integer.parseInt(s), 1);
-    }
+  public OutputFormat<String, LinkedList<Long>> getOutputFormat() {
+    return new TextOutputFormat<String, LinkedList<Long>>();
   }
 
   @Override
-  public void reduce(Integer k, Iterable<Integer> values, RecordWriter<Integer, Integer> w) throws IOException {
-    int cnt = 0;
-    for (var v : values) {
-      cnt += v;
+  public void map(Long k, String v, RecordWriter<String, Long> w) throws IOException {
+    for (var s : v.split(",")) {
+      w.write(s, k);
     }
-    w.write(k, cnt);
   }
   
-  
-
   @Override
-  public OutputFormat<Integer, Integer> getOutputFormat() {
-    return new TextOutputFormat<Integer, Integer>();
+  public void reduce(String k, Iterable<Long> vs, RecordWriter<String, LinkedList<Long>> w) throws IOException {
+    w.write(k, (LinkedList<Long>) vs);
   }
 
   @Override
-  public void combine(Integer k, Iterable<Integer> values, RecordWriter<Integer, Integer> w) throws IOException {
-    int sum = 0;
-    for (var v : values) {
-      sum += v;
+  public void combine(String k, Iterable<LinkedList<Long>> vs, RecordWriter<String, LinkedList<Long>> w)
+      throws IOException {
+    for (var v : vs) {
+      w.write(k, v);
     }
-    w.write(k, sum);
   }
   
 }

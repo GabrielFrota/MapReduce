@@ -9,7 +9,7 @@ import interf.RecordWriter;
 
 public class LineRecordWriter<K, V> implements RecordWriter<K, V> {
   
-  private BufferedWriter writer;
+  protected BufferedWriter writer;
 
   public LineRecordWriter(File out) throws IOException {
     writer = new BufferedWriter(new FileWriter(out));
