@@ -156,7 +156,9 @@ class Worker implements Callable<Integer> {
     public void doReduce() throws RemoteException, IOException, ClassNotFoundException {   
       var recordReader = new PartitionReader(chunks);
       var outName = mapRed.getInputName() + ".redout";
-      var recordWriter = new PartitionWriter(outName, 1);
+      var recordWriter = mapRed.getBufferSize() != null
+          ? new PartitionWriter(outName, 1, mapRed.getBufferSize())
+          : new PartitionWriter(outName, 1);
       
       mapRed.preReduce(recordWriter);
       while (recordReader.readOneAndAdvance()) {
